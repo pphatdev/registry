@@ -61,12 +61,13 @@ export const addCommand = new Command('add')
                 let targetDir = process.cwd();
                 
                 if (config[format]) {
-                    const dirConfig = isComponent ? config[format]?.componentsDir : config[format]?.iconsDir;
+                    const formatConfig = config[format] as any;
+                    const dirConfig = isComponent ? formatConfig?.componentsDir : (formatConfig?.iconsDir || (format === 'svg' ? config.svg?.svgDir : undefined));
                     if (dirConfig) {
                         targetDir = path.join(process.cwd(), dirConfig);
                     } else {
                         // Fallback to old dir schema if they didn't update config
-                        targetDir = path.join(process.cwd(), (config[format] as any).dir || (isComponent ? 'components' : 'icons'));
+                        targetDir = path.join(process.cwd(), formatConfig.dir || (isComponent ? 'components' : 'icons'));
                     }
                 } else {
                     targetDir = path.join(process.cwd(), isComponent ? 'components' : 'icons');

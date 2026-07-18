@@ -9,9 +9,9 @@ export interface CLIConfig {
         nuxtjs?: boolean;
         svg?: boolean;
     };
-    nextjs?: { iconsDir?: string; componentsDir?: string };
-    nuxtjs?: { iconsDir?: string; componentsDir?: string };
-    svg?: { iconsDir?: string; svgDir?: string };
+    nextjs?: { iconsDir?: string; componentsDir?: string; dir?: string };
+    nuxtjs?: { iconsDir?: string; componentsDir?: string; dir?: string };
+    svg?: { iconsDir?: string; svgDir?: string; dir?: string };
 }
 
 export async function getConfig(): Promise<CLIConfig> {

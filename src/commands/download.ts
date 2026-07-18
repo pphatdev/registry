@@ -30,16 +30,7 @@ interface RegistryIndexItem {
     target: string;
 }
 
-interface CLIConfig {
-    use?: {
-        nextjs?: boolean;
-        nuxtjs?: boolean;
-        svg?: boolean;
-    };
-    nextjs?: { dir: string };
-    nuxtjs?: { dir: string };
-    svg?: { dir: string };
-}
+import { CLIConfig, getConfig } from '../core/config';
 
 /**
  * Helper Functions
@@ -130,34 +121,7 @@ function transformContent(name: string, content: string, format: string): { path
     return { path: `${name}.svg`, content };
 }
 
-/**
- * Helper Functions
-*/
-async function getConfig(): Promise<CLIConfig> {
-    const cwd = process.cwd();
-    const configFiles = ['pphatdev.json', 'components.json'];
-    let config: CLIConfig = {
-        use: { svg: true },
-        svg: { dir: 'icons' }
-    };
 
-    for (const configFile of configFiles) {
-        const configPath = path.join(cwd, configFile);
-        if (existsSync(configPath)) {
-            try {
-                const configContent = await fs.readFile(configPath, 'utf-8');
-                const strippedContent = configContent.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
-                const parsed = JSON.parse(strippedContent) as CLIConfig;
-                config = { ...config, ...parsed };
-                break;
-            } catch (err) {
-                console.warn(chalk.yellow(`Found ${configFile} but failed to parse it.`));
-            }
-        }
-    }
-
-    return config;
-}
 
 /**
  * Command Definition
@@ -218,7 +182,16 @@ export const downloadCommand = new Command('add')
             }
 
             for (const format of enabledFormats) {
-                const targetDir = config[format]?.dir ? path.join(process.cwd(), config[format].dir) : path.join(process.cwd(), 'icons');
+                let dirFromConfig = 'icons';
+                if (format === 'nextjs') {
+                    dirFromConfig = config.nextjs?.componentsDir || config.nextjs?.iconsDir || (config.nextjs as any)?.dir || 'components';
+                } else if (format === 'nuxtjs') {
+                    dirFromConfig = config.nuxtjs?.componentsDir || config.nuxtjs?.iconsDir || (config.nuxtjs as any)?.dir || 'components';
+                } else if (format === 'svg') {
+                    dirFromConfig = config.svg?.svgDir || config.svg?.iconsDir || (config.svg as any)?.dir || 'icons';
+                }
+
+                const targetDir = path.join(process.cwd(), dirFromConfig);
                 
                 if (!existsSync(targetDir)) {
                     await fs.mkdir(targetDir, { recursive: true });
