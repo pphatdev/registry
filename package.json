@@ -1,0 +1,44 @@
+{
+    "name": "@pphatdev/registry",
+    "version": "1.0.0",
+    "description": "CLI tool to instantly download and manage custom UI components and icons for your frontend projects",
+    "main": "dist/index.js",
+    "bin": {
+        "pphat": "dist/index.js",
+        "pphatdev": "dist/index.js",
+        "@pphatdev/registry": "dist/index.js"
+    },
+    "scripts": {
+        "build": "npm run build:cli && npm run build:registry",
+        "build:registry": "npx tsx src/scripts/build-registry.ts",
+        "build:cli": "tsup src/index.ts --format cjs --dts",
+        "start": "node dist/index.js",
+        "dev": "tsup src/index.ts --format cjs --watch"
+    },
+    "keywords": [
+        "cli",
+        "pphat",
+        "nextjs",
+        "nuxtjs",
+        "react",
+        "vue",
+        "icons",
+        "svg",
+        "brand-icons",
+        "components",
+        "registry"
+    ],
+    "author": "pphatdev",
+    "license": "MIT",
+    "dependencies": {
+        "@inquirer/prompts": "^8.5.2",
+        "chalk": "^4.1.2",
+        "commander": "^12.1.0",
+        "ora": "^5.4.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.12.12",
+        "tsup": "^8.0.2",
+        "typescript": "^5.4.5"
+    }
+}
