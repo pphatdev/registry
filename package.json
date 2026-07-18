@@ -8,6 +8,13 @@
         "pphatdev": "dist/index.js",
         "@pphatdev/registry": "dist/index.js"
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pphatdev/registry.git"
+    },
+    "files": [
+        "dist"
+    ],
     "scripts": {
         "build": "npm run build:cli && npm run build:registry",
         "build:registry": "npx tsx src/scripts/build-registry.ts",
@@ -28,7 +35,14 @@
         "components",
         "registry"
     ],
-    "author": "pphatdev",
+    "author": "PPhat <hi@pphat.me>",
+    "publishConfig": {
+        "access": "public"
+    },
+    "homepage": "https://github.com/pphatdev/registry",
+    "bugs": {
+        "url": "https://github.com/pphatdev/registry/issues"
+    },
     "license": "MIT",
     "dependencies": {
         "@inquirer/prompts": "^8.5.2",
