@@ -1,22 +1,99 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Brand-icons Configuration",
-    "description": "Configuration file for pphatdev brand-icons CLI",
+    "title": "Registry Configuration",
+    "description": "Configuration file for @pphatdev/registry CLI",
     "type": "object",
     "properties": {
         "$schema": {
             "type": "string"
         },
-        "iconDir": {
+        "name": {
             "type": "string",
-            "description": "Custom directory where pphat brand-icons will be downloaded and saved.",
-            "default": "icons"
+            "description": "Configuration name"
         },
-        "format": {
-            "type": "string",
-            "enum": ["svg", "nextjs", "nuxtjs"],
-            "description": "The format to save the downloaded icon in.",
-            "default": "svg"
+        "icons": {
+            "type": "object",
+            "description": "Icons download configuration",
+            "properties": {
+                "svg": {
+                    "type": "object",
+                    "properties": {
+                        "dir": {
+                            "type": "string",
+                            "description": "Target directory for SVG icons"
+                        },
+                        "use": {
+                            "type": "boolean",
+                            "description": "Enable SVG icons download"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "nextjs": {
+                    "type": "object",
+                    "properties": {
+                        "dir": {
+                            "type": "string",
+                            "description": "Target directory for Next.js React icons"
+                        },
+                        "use": {
+                            "type": "boolean",
+                            "description": "Enable Next.js React icons download"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "nuxtjs": {
+                    "type": "object",
+                    "properties": {
+                        "dir": {
+                            "type": "string",
+                            "description": "Target directory for Nuxt.js Vue icons"
+                        },
+                        "use": {
+                            "type": "boolean",
+                            "description": "Enable Nuxt.js Vue icons download"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        },
+        "components": {
+            "type": "object",
+            "description": "Components download configuration",
+            "properties": {
+                "nextjs": {
+                    "type": "object",
+                    "properties": {
+                        "dir": {
+                            "type": "string",
+                            "description": "Target directory for Next.js UI components"
+                        },
+                        "use": {
+                            "type": "boolean",
+                            "description": "Enable Next.js components download"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "nuxtjs": {
+                    "type": "object",
+                    "properties": {
+                        "dir": {
+                            "type": "string",
+                            "description": "Target directory for Nuxt.js UI components"
+                        },
+                        "use": {
+                            "type": "boolean",
+                            "description": "Enable Nuxt.js components download"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
         }
     },
     "additionalProperties": true

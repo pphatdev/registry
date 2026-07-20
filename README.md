@@ -18,51 +18,76 @@ Instead of bundling thousands of heavy icons in an npm package, this CLI dynamic
 
 ## 💻 Usage
 
-You don't even need to install it! You can run it directly using `npx`:
+You don't even need to install it! You can run it directly using `npx`. 
+The CLI supports multiple convenient aliases (prefixes), so you can use any of the following interchangeably:
+- `npx pphat`
+- `npx pphatdev`
+- `npx @pphatdev/registry`
 
 ### 1. Initialize your project
-Run the `init` command to set up your preferences. It will ask you where you want to save your items and what format you prefer (SVG, Next.js, or Nuxt.js).
+Run the `init` command to set up your preferences. It will interactively ask you which types of resources you want to manage (components, icons, or both) and what formats you prefer.
 ```bash
-npx @pphatdev/registry init
+npx pphat init
 ```
-This generates a `pphatdev.json` file in the root of your project:
+*Here is an example of the interactive initialization process:*
+```text
+? What is name of config ? › Default configuration
+? What do you want to use ? (required must select one) › both
+
+? Which directory you want to use for icons? (required must select one) › svg, nextjs, nuxtjs
+? Where do you store icon of svg ? › assets/icons
+? Where do you store icon of nextjs ? › components/icons
+? Where do you store icon of nuxtjs ? › components/icons
+
+? Which directory you want to use for components? (required must select one) › nextjs, nuxtjs
+? Where do you store component of nextjs ? › components/ui
+? Where do you store component of nuxtjs ? › components/ui
+
+Success! Configuration saved to pphatdev.json.
+```
+
+This generates a perfectly structured `pphatdev.json` file in the root of your project:
 ```json
 {
-  "use": {
-    "nextjs": true,
-    "nuxtjs": true,
-    "svg": true
+  "name": "My configuration",
+  "icons": {
+    "svg": { "dir": "assets/icons", "use": true },
+    "nextjs": { "dir": "components/icons", "use": true },
+    "nuxtjs": { "dir": "components/icons", "use": true }
   },
-  "nextjs": {
-    "dir": "test-icons"
-  },
-  "nuxtjs": {
-    "dir": "test-icons"
-  },
-  "svg": {
-    "dir": "test-icons"
+  "components": {
+    "nextjs": { "dir": "components/ui", "use": true },
+    "nuxtjs": { "dir": "components/ui", "use": true }
   }
 }
 ```
 
-### 2. Add an Item
+### 2. Discover Items
+To browse the available icons or components in the registry, you can use the `list` (or `ls`) command:
+```bash
+npx pphat list icons
+npx pphat ls components
+```
+*It displays items in pages of 10, letting you use the arrow keys to browse!*
+
+### 3. Add an Item
 To download a component or icon (e.g., React, Vue, GitHub, etc.), use the `add` command:
 ```bash
-npx @pphatdev/registry add react
+npx pphat add react
 ```
-*It will automatically download and format it based on your `pphatdev.json` preferences.*
+*It will automatically download and format it into the respective directory based on your `pphatdev.json` preferences.*
 
 #### Overriding formats on the fly:
 If you want to download an item in a specific format just once, you can pass the `-f` or `--format` flag:
 ```bash
 # Download as raw SVG
-npx @pphatdev/registry add react -f svg
+npx pphat add react -f svg
 
 # Download as Next.js React component
-npx @pphatdev/registry add react -f nextjs
+npx pphat add react -f nextjs
 
 # Download as Nuxt.js Vue component
-npx @pphatdev/registry add react -f nuxtjs
+npx pphat add react -f nuxtjs
 ```
 
 ## 🌍 Global Installation (Optional)

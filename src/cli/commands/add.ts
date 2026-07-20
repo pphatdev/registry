@@ -10,10 +10,17 @@ import { getConfig } from '../../core/config';
 import { fetchRegistryIndex, fetchRegistryItem, RegistryItem } from '../../core/registry';
 import { transformContent } from '../../compilers';
 
+/**
+* Add Command
+* @description Download and copy an item (icon or component) into your project
+* @param name Name of the item to download
+* @param options Command options (e.g., format)
+* @returns void
+*/
 export const addCommand = new Command('add')
-    .description('Download or copy item')
-    .argument('[name]', 'Name of the item')
-    .option('-f, --format <format>', 'Format to download (svg, nextjs, nuxtjs)')
+    .description('Download and copy an item (icon or component) into your project')
+    .argument('[name]', 'Name of the item to download')
+    .option('-f, --format <format>', 'Override format to download (svg, nextjs, nuxtjs)')
     .action(async (name: string, options: { format?: 'nextjs' | 'nuxtjs' | 'svg' }) => {
         if (!name) {
             console.error(chalk.red('Please provide an item name.'));
@@ -46,29 +53,34 @@ export const addCommand = new Command('add')
 
             const config = await getConfig();
             
+            const isComponent = itemInfo.type === 'components' || itemInfo.repo === 'components';
+            const configCategory = isComponent ? config.components : config.icons;
+
             const enabledFormats: ('nextjs'|'nuxtjs'|'svg')[] = [];
             if (options.format) {
                 enabledFormats.push(options.format);
             } else {
-                if (config.use?.nextjs) enabledFormats.push('nextjs');
-                if (config.use?.nuxtjs) enabledFormats.push('nuxtjs');
-                if (config.use?.svg) enabledFormats.push('svg');
-                if (enabledFormats.length === 0) enabledFormats.push('svg');
+                if (configCategory?.nextjs?.use) enabledFormats.push('nextjs');
+                if (configCategory?.nuxtjs?.use) enabledFormats.push('nuxtjs');
+                if (!isComponent && config.icons?.svg?.use) enabledFormats.push('svg');
+                
+                if (enabledFormats.length === 0) {
+                    spinner.stop();
+                    console.error(chalk.red('No formats configured or selected.'));
+                    console.error(chalk.yellow(`Please specify a format using -f <format> or configure it in pphatdev.json.`));
+                    process.exit(1);
+                }
             }
 
             for (const format of enabledFormats) {
-                const isComponent = itemInfo.type === 'components';
                 let targetDir = process.cwd();
                 
-                if (config[format]) {
-                    const formatConfig = config[format] as any;
-                    const dirConfig = isComponent ? formatConfig?.componentsDir : (formatConfig?.iconsDir || (format === 'svg' ? config.svg?.svgDir : undefined));
-                    if (dirConfig) {
-                        targetDir = path.join(process.cwd(), dirConfig);
-                    } else {
-                        // Fallback to old dir schema if they didn't update config
-                        targetDir = path.join(process.cwd(), formatConfig.dir || (isComponent ? 'components' : 'icons'));
-                    }
+                const formatConfig = isComponent 
+                    ? config.components?.[format as 'nextjs'|'nuxtjs'] 
+                    : config.icons?.[format as 'nextjs'|'nuxtjs'|'svg'];
+                
+                if (formatConfig && formatConfig.dir) {
+                    targetDir = path.join(process.cwd(), formatConfig.dir);
                 } else {
                     targetDir = path.join(process.cwd(), isComponent ? 'components' : 'icons');
                 }

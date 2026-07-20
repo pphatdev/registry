@@ -1,67 +1,99 @@
 import { Command } from 'commander';
-import { input, confirm, checkbox } from '@inquirer/prompts';
+import { input, confirm, checkbox, select } from '@inquirer/prompts';
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import { CLIConfig } from '../../core/config';
 
+/**
+* Init Command
+* @description Initialize configuration (pphatdev.json) and set up your project preferences
+* @returns void
+*/
 export const initCommand = new Command('init')
-    .description('Initialize configuration for pphatdev CLI')
+    .description('Initialize configuration (pphatdev.json) and set up your project preferences')
     .action(async () => {
         try {
             console.log(chalk.blue('\nWelcome to @pphatdev/registry initialization!'));
             console.log(chalk.gray('This will create a pphatdev.json config file in your project.\n'));
 
-            const selectedFormats = await checkbox({
-                message: 'Which formats would you like to download components and icons in? (Select all that apply)',
+            const configName = await input({
+                message: 'What is name of config ?',
+                default: 'Default configuration',
+            });
+
+            const useType = await select({
+                message: 'What do you want to use ? (required must select one)',
                 choices: [
-                    { name: 'SVG (.svg)', value: 'svg', checked: true },
-                    { name: 'Next.js component (.tsx)', value: 'nextjs' },
-                    { name: 'Nuxt.js component (.vue)', value: 'nuxtjs' }
+                    { name: 'Components', value: 'components' },
+                    { name: 'Icons', value: 'icons' },
+                    { name: 'Both Components and Icons', value: 'both' }
                 ]
             });
 
-            if (selectedFormats.length === 0) {
-                console.log(chalk.yellow('No formats selected. Defaulting to SVG.'));
-                selectedFormats.push('svg');
-            }
-
             const config: CLIConfig = {
-                use: {
-                    nextjs: selectedFormats.includes('nextjs'),
-                    nuxtjs: selectedFormats.includes('nuxtjs'),
-                    svg: selectedFormats.includes('svg')
-                }
+                name: configName.trim(),
+                icons: {},
+                components: {}
             };
 
-            for (const format of selectedFormats) {
-                console.log(chalk.cyan(`\nConfiguring directories for ${format}:`));
-                
-                if (format === 'svg') {
-                    const svgDir = await input({
-                        message: `Where would you like to store SVG icons?`,
-                        default: 'icons',
-                    });
-                    config.svg = { svgDir: svgDir.trim() };
-                } else {
-                    const defaultIconsDir = `components/icons`;
-                    const defaultComponentsDir = `components/ui`;
-                    
-                    const iconsDir = await input({
-                        message: `Where would you like to store ${format} icons?`,
-                        default: defaultIconsDir,
-                    });
-                    
-                    const componentsDir = await input({
-                        message: `Where would you like to store ${format} components?`,
-                        default: defaultComponentsDir,
-                    });
-                    
-                    if (format === 'nextjs') config.nextjs = { iconsDir: iconsDir.trim(), componentsDir: componentsDir.trim() };
-                    if (format === 'nuxtjs') config.nuxtjs = { iconsDir: iconsDir.trim(), componentsDir: componentsDir.trim() };
-                }
+            let iconFormats: string[] = [];
+            let componentFormats: string[] = [];
+
+            if (useType === 'icons' || useType === 'both') {
+                const message = useType === 'both' 
+                    ? 'Which directory you want to use for icons? (required must select one)'
+                    : 'Which directory you want to use ? (required must select one)';
+                iconFormats = await checkbox({
+                    message,
+                    choices: [
+                        { name: 'SVG format (.svg)', value: 'svg' },
+                        { name: 'Nextjs format (.tsx)', value: 'nextjs' },
+                        { name: 'Nuxtjs format (.vue)', value: 'nuxtjs' }
+                    ],
+                    validate: (choices) => choices.length > 0 || 'You must select at least one format.'
+                });
             }
+
+            if (useType === 'components' || useType === 'both') {
+                componentFormats = await checkbox({
+                    message: 'Which directory you want to use for components? (required must select one)',
+                    choices: [
+                        { name: 'Nextjs format (.tsx)', value: 'nextjs' },
+                        { name: 'Nuxtjs format (.vue)', value: 'nuxtjs' }
+                    ],
+                    validate: (choices) => choices.length > 0 || 'You must select at least one format.'
+                });
+            }
+
+            // Ask for Icon Directories
+            if (iconFormats.includes('svg')) {
+                const dir = await input({ message: 'Where do you store icon of svg ?', default: 'assets/icons' });
+                config.icons!.svg = { dir: dir.trim(), use: true };
+            }
+            if (iconFormats.includes('nextjs')) {
+                const dir = await input({ message: 'Where do you store icon of nextjs ?', default: 'components/icons' });
+                config.icons!.nextjs = { dir: dir.trim(), use: true };
+            }
+            if (iconFormats.includes('nuxtjs')) {
+                const dir = await input({ message: 'Where do you store icon of nuxtjs ?', default: 'components/icons' });
+                config.icons!.nuxtjs = { dir: dir.trim(), use: true };
+            }
+
+            // Ask for Component Directories
+            if (componentFormats.includes('nextjs')) {
+                const dir = await input({ message: 'Where do you store component of nextjs ?', default: 'components/ui' });
+                config.components!.nextjs = { dir: dir.trim(), use: true };
+            }
+            if (componentFormats.includes('nuxtjs')) {
+                const dir = await input({ message: 'Where do you store component of nuxtjs ?', default: 'components/ui' });
+                config.components!.nuxtjs = { dir: dir.trim(), use: true };
+            }
+
+            // Clean up empty objects
+            if (Object.keys(config.icons!).length === 0) delete config.icons;
+            if (Object.keys(config.components!).length === 0) delete config.components;
 
             const configPath = path.join(process.cwd(), 'pphatdev.json');
 
