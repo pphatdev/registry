@@ -4,22 +4,37 @@ import path from 'path';
 import chalk from 'chalk';
 
 export interface CLIConfig {
-    use?: {
-        nextjs?: boolean;
-        nuxtjs?: boolean;
-        svg?: boolean;
+    name?: string;
+    icons?: {
+        svg?: { dir?: string; use?: boolean };
+        nextjs?: { dir?: string; use?: boolean };
+        nuxtjs?: { dir?: string; use?: boolean };
     };
-    nextjs?: { iconsDir?: string; componentsDir?: string; dir?: string };
-    nuxtjs?: { iconsDir?: string; componentsDir?: string; dir?: string };
-    svg?: { iconsDir?: string; svgDir?: string; dir?: string };
+    components?: {
+        nextjs?: { dir?: string; use?: boolean };
+        nuxtjs?: { dir?: string; use?: boolean };
+    };
 }
 
+/**
+* Get Configuration
+* @description Retrieves the CLI configuration from local files or falls back to defaults
+* @returns The resolved CLI configuration object
+*/
 export async function getConfig(): Promise<CLIConfig> {
     const cwd = process.cwd();
-    const configFiles = ['pphatdev.json', 'components.json'];
+    const configFiles = ['pphatdev.json', 'components.json', 'config.json'];
     let config: CLIConfig = {
-        use: { svg: true },
-        svg: { iconsDir: 'icons' }
+        name: 'Default configuration',
+        icons: {
+            svg: { dir: 'assets/icons', use: false },
+            nextjs: { dir: 'components/icons', use: false },
+            nuxtjs: { dir: 'components/icons', use: false }
+        },
+        components: {
+            nextjs: { dir: 'components/ui', use: false },
+            nuxtjs: { dir: 'components/ui', use: false }
+        }
     };
 
     for (const configFile of configFiles) {

@@ -3,10 +3,28 @@
 import { Command } from 'commander';
 import { addCommand } from './cli/commands/add';
 import { initCommand } from './cli/commands/init';
-
+import { listCommand } from './cli/commands/list';
 import chalk from 'chalk';
+import { version, name } from '../package.json';
 
 const program = new Command();
+
+async function checkUpdate() {
+    try {
+        const res = await fetch(`https://registry.npmjs.org/${name}/latest`, {
+            signal: AbortSignal.timeout(1500)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.version && data.version !== version) {
+                console.log(chalk.yellow(`\n📦 Update available! ${chalk.dim(version)} → ${chalk.green(data.version)}`));
+                console.log(chalk.cyan(`Run ${chalk.bold(`npm install -g ${name}`)} or use ${chalk.bold(`npx ${name}@latest`)} to get the latest version.\n`));
+            }
+        }
+    } catch (err) {
+        // silently ignore network errors
+    }
+}
 
 const WELCOME_MESSAGE = `
 ${chalk.blue.bold('  ____  ____  _   _    _  _____ ')}
@@ -18,12 +36,13 @@ ${chalk.magenta('\n    Welcome to @pphatdev/registry! 🚀\n')}
 `;
 
 program
-  .name('pphatdev')
-  .description('CLI to download and manage custom UI components and icons')
-  .version('1.0.0', '-v, -V, --version', 'Output the current version');
+  .name('pphat')
+  .description('A powerful and extremely fast CLI tool to instantly download and manage custom UI components and icons.')
+  .version(version, '-v, -V, --version', 'Output the current version');
 
 program.addCommand(addCommand);
 program.addCommand(initCommand);
+program.addCommand(listCommand);
 
 // Workaround for Windows appending '/registry' when running the scoped @pphatdev/registry alias
 let args = process.argv;
@@ -31,8 +50,13 @@ if (args[2] === '/registry') {
   args = [...args.slice(0, 2), ...args.slice(3)];
 }
 
-if (args.length === 2 || (args.length === 3 && (args[2] === '-h' || args[2] === '--help'))) {
-  console.log(WELCOME_MESSAGE);
+async function main() {
+  if (args.length === 2 || (args.length === 3 && (args[2] === '-h' || args[2] === '--help'))) {
+    console.log(WELCOME_MESSAGE);
+  }
+
+  await program.parseAsync(args);
+  await checkUpdate();
 }
 
-program.parse(args);
+main();

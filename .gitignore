@@ -4,3 +4,4 @@ icons/
 pphatdev.json
 
 registry/
+.env

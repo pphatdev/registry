@@ -5,6 +5,11 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
+/**
+* Legacy Init Command
+* @description Initialize configuration for pphatdev CLI
+* @returns void
+*/
 export const initCommand = new Command('init')
     .description('Initialize configuration for pphatdev CLI')
     .action(async () => {

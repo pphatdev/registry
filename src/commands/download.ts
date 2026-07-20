@@ -32,13 +32,26 @@ interface RegistryIndexItem {
 
 import { CLIConfig, getConfig } from '../core/config';
 
+
 /**
- * Helper Functions
+* Convert to Pascal Case
+* @description Converts a given string (e.g., kebab-case) to PascalCase
+* @param str The string to convert
+* @returns The PascalCase string
 */
 function toPascalCase(str: string): string {
     return str.replace(/(^\w|-\w)/g, (clearAndUpper) => clearAndUpper.replace(/-/, '').toUpperCase());
 }
 
+/**
+* Format SVG Parts
+* @description Parses and formats the internal parts of an SVG string for component generation
+* @param content The raw SVG content string
+* @param baseIndent The base indentation level
+* @param tabSize The size of a tab in spaces
+* @param isReact Whether the target format is React (TSX)
+* @returns Formatted SVG attributes and inner content, or null if parsing fails
+*/
 function formatSvgParts(content: string, baseIndent: number, tabSize: number, isReact: boolean): { attributes: string, rawAttributes: string, inner: string } | null {
     const svgMatch = content.match(/<svg([^>]*)>([\s\S]*?)<\/svg>/i);
     if (!svgMatch) return null;
@@ -95,6 +108,14 @@ function formatSvgParts(content: string, baseIndent: number, tabSize: number, is
     return { attributes: formattedAttributes, rawAttributes: attrString, inner: formattedInner.join('\n') };
 }
 
+/**
+* Transform Content
+* @description Transforms raw registry content into the requested framework format (svg, nextjs, nuxtjs)
+* @param name The original file or item name
+* @param content The raw string content of the item
+* @param format The target output format
+* @returns The transformed file path and string content
+*/
 function transformContent(name: string, content: string, format: string): { path: string, content: string } {
     if (format === 'nextjs') {
         const componentName = `${toPascalCase(name)}Icon`;
@@ -125,6 +146,13 @@ function transformContent(name: string, content: string, format: string): { path
 
 /**
  * Command Definition
+*/
+/**
+* Legacy Download Command
+* @description Download or copy an item into your project
+* @param name Name of the item
+* @param options Command options (e.g., format)
+* @returns void
 */
 export const downloadCommand = new Command('add')
     .description('Download or copy item')
@@ -175,20 +203,20 @@ export const downloadCommand = new Command('add')
             if (options.format) {
                 enabledFormats.push(options.format);
             } else {
-                if (config.use?.nextjs) enabledFormats.push('nextjs');
-                if (config.use?.nuxtjs) enabledFormats.push('nuxtjs');
-                if (config.use?.svg) enabledFormats.push('svg');
+                if (config.icons?.nextjs?.use || config.components?.nextjs?.use) enabledFormats.push('nextjs');
+                if (config.icons?.nuxtjs?.use || config.components?.nuxtjs?.use) enabledFormats.push('nuxtjs');
+                if (config.icons?.svg?.use) enabledFormats.push('svg');
                 if (enabledFormats.length === 0) enabledFormats.push('svg');
             }
 
             for (const format of enabledFormats) {
                 let dirFromConfig = 'icons';
                 if (format === 'nextjs') {
-                    dirFromConfig = config.nextjs?.componentsDir || config.nextjs?.iconsDir || (config.nextjs as any)?.dir || 'components';
+                    dirFromConfig = config.icons?.nextjs?.dir || config.components?.nextjs?.dir || 'components';
                 } else if (format === 'nuxtjs') {
-                    dirFromConfig = config.nuxtjs?.componentsDir || config.nuxtjs?.iconsDir || (config.nuxtjs as any)?.dir || 'components';
+                    dirFromConfig = config.icons?.nuxtjs?.dir || config.components?.nuxtjs?.dir || 'components';
                 } else if (format === 'svg') {
-                    dirFromConfig = config.svg?.svgDir || config.svg?.iconsDir || (config.svg as any)?.dir || 'icons';
+                    dirFromConfig = config.icons?.svg?.dir || 'icons';
                 }
 
                 const targetDir = path.join(process.cwd(), dirFromConfig);

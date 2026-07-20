@@ -1,6 +1,6 @@
 {
     "name": "@pphatdev/registry",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "CLI tool to instantly download and manage custom UI components and icons for your frontend projects",
     "main": "dist/index.js",
     "bin": {
@@ -16,6 +16,7 @@
         "dist"
     ],
     "scripts": {
+        "test": "npx tsx --test tests/*.test.ts",
         "build": "npm run build:cli && npm run build:registry",
         "build:registry": "npx tsx src/scripts/build-registry.ts",
         "build:cli": "tsup src/index.ts --format cjs --dts",
