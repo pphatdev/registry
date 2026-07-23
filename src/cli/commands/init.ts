@@ -13,6 +13,10 @@ import { CLIConfig } from '../../core/config';
 */
 export const initCommand = new Command('init')
     .description('Initialize configuration (pphatdev.json) and set up your project preferences')
+    .addHelpText('after', `
+${chalk.blue.bold('Examples:')}
+  $ pphat init
+`)
     .action(async () => {
         try {
             console.log(chalk.blue('\nWelcome to @pphatdev/registry initialization!'));
@@ -34,15 +38,22 @@ export const initCommand = new Command('init')
 
             const config: CLIConfig = {
                 name: configName.trim(),
-                icons: {},
-                components: {}
+                icons: {
+                    svg: { dir: 'public/icons', use: false },
+                    nextjs: { dir: 'components/icons', use: false },
+                    nuxtjs: { dir: 'components/icons', use: false }
+                },
+                components: {
+                    nextjs: { dir: 'components/ui', use: false },
+                    nuxtjs: { dir: 'components/ui', use: false }
+                }
             };
 
             let iconFormats: string[] = [];
             let componentFormats: string[] = [];
 
             if (useType === 'icons' || useType === 'both') {
-                const message = useType === 'both' 
+                const message = useType === 'both'
                     ? 'Which directory you want to use for icons? (required must select one)'
                     : 'Which directory you want to use ? (required must select one)';
                 iconFormats = await checkbox({
@@ -57,8 +68,11 @@ export const initCommand = new Command('init')
             }
 
             if (useType === 'components' || useType === 'both') {
+                const message = useType === 'both'
+                    ? 'Which directory you want to use for components? (required must select one)'
+                    : 'Which directory you want to use ? (required must select one)';
                 componentFormats = await checkbox({
-                    message: 'Which directory you want to use for components? (required must select one)',
+                    message,
                     choices: [
                         { name: 'Nextjs format (.tsx)', value: 'nextjs' },
                         { name: 'Nuxtjs format (.vue)', value: 'nuxtjs' }
@@ -69,7 +83,7 @@ export const initCommand = new Command('init')
 
             // Ask for Icon Directories
             if (iconFormats.includes('svg')) {
-                const dir = await input({ message: 'Where do you store icon of svg ?', default: 'assets/icons' });
+                const dir = await input({ message: 'Where do you store icon of svg ?', default: 'public/icons' });
                 config.icons!.svg = { dir: dir.trim(), use: true };
             }
             if (iconFormats.includes('nextjs')) {
@@ -91,10 +105,6 @@ export const initCommand = new Command('init')
                 config.components!.nuxtjs = { dir: dir.trim(), use: true };
             }
 
-            // Clean up empty objects
-            if (Object.keys(config.icons!).length === 0) delete config.icons;
-            if (Object.keys(config.components!).length === 0) delete config.components;
-
             const configPath = path.join(process.cwd(), 'pphatdev.json');
 
             // Check if it already exists
@@ -104,7 +114,7 @@ export const initCommand = new Command('init')
                     message: 'Do you want to overwrite it?',
                     default: false,
                 });
-                
+
                 if (!overwrite) {
                     console.log(chalk.gray('Initialization cancelled.'));
                     return;
@@ -115,7 +125,7 @@ export const initCommand = new Command('init')
 
             console.log(chalk.green(`\nSuccess! Configuration saved to pphatdev.json.`));
             console.log(chalk.gray(`Your items will be saved to your configured directories.\n`));
-            
+
         } catch (error) {
             console.error(chalk.red('\nInitialization cancelled or failed.'), error);
             process.exit(1);

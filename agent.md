@@ -23,8 +23,9 @@ This repository is a CLI tool (`@pphatdev/registry`) designed to instantly downl
 - `npm run start`: Run the compiled CLI from `dist/index.js`.
 
 ## Development Guidelines
-- Always write logic in TypeScript inside the `src/` directory.
-- When modifying the CLI commands (like `init`, `add`, or `list`), ensure you update or adhere to the existing structure.
+- **CRITICAL**: Do NOT manually edit or touch built/generated files or directories (such as `dist/`, `registry/`, or build artifacts). All build outputs must be generated via build commands (`npm run build:cli`, `npm run build:registry`, `npm run build`).
+- Always write and modify logic in TypeScript inside the `src/` directory.
+- When modifying CLI commands (like `init`, `add-icons`, `add-components`, `list`, or `config`), ensure you update the source files in `src/cli/commands/`.
 - The CLI outputs components dynamically. Make sure formatting (like XML parsing for SVGs) is preserved during transformation.
 - If you need to make changes to how the registry is built, update `src/scripts/build-registry.ts` and test with a valid `GITHUB_TOKEN`.
 - Do not check in personal `GITHUB_TOKEN` credentials.

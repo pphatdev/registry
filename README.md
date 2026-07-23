@@ -32,37 +32,60 @@ npx pphat init
 *Here is an example of the interactive initialization process:*
 ```text
 ? What is name of config ? › Default configuration
-? What do you want to use ? (required must select one) › both
+? What do you want to use ? (required must select one) › Icons
 
-? Which directory you want to use for icons? (required must select one) › svg, nextjs, nuxtjs
-? Where do you store icon of svg ? › assets/icons
+? Which directory you want to use ? (required must select one) › Nextjs format (.tsx)
 ? Where do you store icon of nextjs ? › components/icons
-? Where do you store icon of nuxtjs ? › components/icons
-
-? Which directory you want to use for components? (required must select one) › nextjs, nuxtjs
-? Where do you store component of nextjs ? › components/ui
-? Where do you store component of nuxtjs ? › components/ui
 
 Success! Configuration saved to pphatdev.json.
 ```
 
-This generates a perfectly structured `pphatdev.json` file in the root of your project:
+This generates a perfectly structured `pphatdev.json` file in the root of your project. Formats and sections you don't select are still written out with `"use": false` and their default `dir`, so you can enable them later by flipping the flag:
 ```json
 {
-  "name": "My configuration",
+  "name": "Default configuration",
   "icons": {
-    "svg": { "dir": "assets/icons", "use": true },
-    "nextjs": { "dir": "components/icons", "use": true },
-    "nuxtjs": { "dir": "components/icons", "use": true }
+    "svg": {
+      "dir": "public/icons",
+      "use": false
+    },
+    "nextjs": {
+      "dir": "components/icons",
+      "use": true
+    },
+    "nuxtjs": {
+      "dir": "components/icons",
+      "use": false
+    }
   },
   "components": {
-    "nextjs": { "dir": "components/ui", "use": true },
-    "nuxtjs": { "dir": "components/ui", "use": true }
+    "nextjs": {
+      "dir": "components/ui",
+      "use": false
+    },
+    "nuxtjs": {
+      "dir": "components/ui",
+      "use": false
+    }
   }
 }
 ```
 
-### 2. Discover Items
+### 2. View and Update Configuration
+You can interactively update or inspect your configuration anytime using the `config` command:
+```bash
+# Interactively update your project preferences
+npx pphat config
+
+# View current configuration
+npx pphat config get
+
+# Get or set a specific config key
+npx pphat config get icons.nextjs.dir
+npx pphat config set icons.nextjs.use true
+```
+
+### 3. Discover Items
 To browse the available icons or components in the registry, you can use the `list` (or `ls`) command:
 ```bash
 npx pphat list icons
@@ -70,25 +93,21 @@ npx pphat ls components
 ```
 *It displays items in pages of 10, letting you use the arrow keys to browse!*
 
-### 3. Add an Item
-To download a component or icon (e.g., React, Vue, GitHub, etc.), use the `add` command:
+### 4. Add Icons or Components
+To download one or multiple icons or components, use the `add-icon` (or `add`) and `add-component` (or `add-comp`) commands:
+
 ```bash
-npx pphat add react
+# Download icons
+npx pphat add-icon react vue github
+
+# Download components
+npx pphat add-component button card modal
+
+# Download using custom format or target directory
+npx pphat add-icon react vue -d src/assets/icons
+npx pphat add-component button -f nextjs -d src/components/ui
 ```
-*It will automatically download and format it into the respective directory based on your `pphatdev.json` preferences.*
-
-#### Overriding formats on the fly:
-If you want to download an item in a specific format just once, you can pass the `-f` or `--format` flag:
-```bash
-# Download as raw SVG
-npx pphat add react -f svg
-
-# Download as Next.js React component
-npx pphat add react -f nextjs
-
-# Download as Nuxt.js Vue component
-npx pphat add react -f nuxtjs
-```
+*It will automatically download and format them into the respective directory based on your `pphatdev.json` preferences.*
 
 ## 🌍 Global Installation (Optional)
 If you plan to use it frequently across many projects, you can install it globally:
@@ -98,7 +117,7 @@ npm install -g @pphatdev/registry
 Then use the short commands:
 ```bash
 pphat init
-pphat add github
+pphat add-icon github
 ```
 
 ---

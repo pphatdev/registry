@@ -27,7 +27,7 @@ export async function getConfig(): Promise<CLIConfig> {
     let config: CLIConfig = {
         name: 'Default configuration',
         icons: {
-            svg: { dir: 'assets/icons', use: false },
+            svg: { dir: 'public/icons', use: false },
             nextjs: { dir: 'components/icons', use: false },
             nuxtjs: { dir: 'components/icons', use: false }
         },

@@ -29,7 +29,7 @@ describe('CLI Add Command (-f formats)', () => {
 
     test('Download as SVG', () => {
         // Run add command with svg format
-        execSync(`npx tsx ${cliPath} add ${testIcon} -f svg`, { cwd: testDir, encoding: 'utf-8' });
+        execSync(`npx tsx ${cliPath} add-icon ${testIcon} -f svg`, { cwd: testDir, encoding: 'utf-8' });
         
         // The default config in getConfig() sets 'assets/icons' for svg
         const expectedFilePath = path.join(testDir, 'assets', 'icons', `${testIcon}.svg`);
@@ -41,9 +41,9 @@ describe('CLI Add Command (-f formats)', () => {
     });
 
     test('Download as Next.js (TSX)', () => {
-        execSync(`npx tsx ${cliPath} add ${testIcon} -f nextjs`, { cwd: testDir, encoding: 'utf-8' });
+        execSync(`npx tsx ${cliPath} add-icon ${testIcon} -f nextjs`, { cwd: testDir, encoding: 'utf-8' });
         
-        // The default config in getConfig() sets 'components/icons' for nextjs icons
+        // The default config in getConfig() sets 'src/components/icons' for nextjs icons
         let expectedFilePath = path.join(testDir, 'components', 'icons', `${testIcon}.tsx`);
         if (!fs.existsSync(expectedFilePath)) {
             expectedFilePath = path.join(testDir, 'components', 'icons', 'ReactIcon.tsx');
@@ -58,9 +58,9 @@ describe('CLI Add Command (-f formats)', () => {
     });
 
     test('Download as Nuxt.js (Vue)', () => {
-        execSync(`npx tsx ${cliPath} add ${testIcon} -f nuxtjs`, { cwd: testDir, encoding: 'utf-8' });
+        execSync(`npx tsx ${cliPath} add-icon ${testIcon} -f nuxtjs`, { cwd: testDir, encoding: 'utf-8' });
         
-        // The default config in getConfig() sets 'components/icons' for nuxtjs icons
+        // The default config in getConfig() sets 'src/components/icons' for nuxtjs icons
         const expectedFilePath = path.join(testDir, 'components', 'icons', `${testIcon}.vue`);
         assert.ok(fs.existsSync(expectedFilePath), `File should exist at ${expectedFilePath}`);
         
@@ -102,7 +102,7 @@ describe('CLI Add Command (with pphatdev.json config)', () => {
     });
 
     test('Verify configured downloaded path (SVG)', () => {
-        execSync(`npx tsx ${cliPath} add ${testIcon} -f svg`, { cwd: testDir, encoding: 'utf-8' });
+        execSync(`npx tsx ${cliPath} add-icon ${testIcon} -f svg`, { cwd: testDir, encoding: 'utf-8' });
         
         // It should save into custom_assets/icons as per config
         const expectedFilePath = path.join(testDir, 'custom_assets', 'icons', `${testIcon}.svg`);
@@ -110,7 +110,7 @@ describe('CLI Add Command (with pphatdev.json config)', () => {
     });
 
     test('Verify configured downloaded path (Next.js)', () => {
-        execSync(`npx tsx ${cliPath} add ${testIcon} -f nextjs`, { cwd: testDir, encoding: 'utf-8' });
+        execSync(`npx tsx ${cliPath} add-icon ${testIcon} -f nextjs`, { cwd: testDir, encoding: 'utf-8' });
         
         // It should save into custom_components/icons as per config
         let expectedFilePath = path.join(testDir, 'custom_components', 'icons', `${testIcon}.tsx`);
@@ -122,7 +122,7 @@ describe('CLI Add Command (with pphatdev.json config)', () => {
     });
 
     test('Verify configured downloaded path (Nuxt.js)', () => {
-        execSync(`npx tsx ${cliPath} add ${testIcon} -f nuxtjs`, { cwd: testDir, encoding: 'utf-8' });
+        execSync(`npx tsx ${cliPath} add-icon ${testIcon} -f nuxtjs`, { cwd: testDir, encoding: 'utf-8' });
         
         // It should save into custom_components/icons_vue as per config
         const expectedFilePath = path.join(testDir, 'custom_components', 'icons_vue', `${testIcon}.vue`);
