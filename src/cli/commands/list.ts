@@ -13,6 +13,12 @@ export const listCommand = new Command('list')
     .alias('ls')
     .description('List all available items in the registry (icons or components)')
     .argument('<type>', 'Type of packages to list (icons|components)')
+    .addHelpText('after', `
+${chalk.blue.bold('Examples:')}
+  $ pphat list icons
+  $ pphat list components
+  $ pphat ls icons
+`)
     .action(async (type: string) => {
         if (type !== 'icons' && type !== 'components') {
             console.error(chalk.red('Invalid type. Must be "icons" or "components".'));
@@ -28,7 +34,7 @@ export const listCommand = new Command('list')
                 spinner.fail(chalk.red(`Repository for ${type} not found or is empty.`));
                 return;
             }
-            
+
             spinner.stop();
 
             const items = indexList.filter(item => {
@@ -64,15 +70,15 @@ export const listCommand = new Command('list')
                 const item = allItemsToDisplay[i];
                 if (item.category !== currentCategory) {
                     currentCategory = item.category;
-                    const header = currentCategory === 'components' 
-                        ? 'Available components:' 
+                    const header = currentCategory === 'components'
+                        ? 'Available components:'
                         : `Available ${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} Icons:`;
                     console.log(chalk.blue.bold(`\n${header}\n`));
                 }
-                
+
                 console.log(`  - ${chalk.green(item.name)}`);
                 count++;
-                
+
                 if (count === 10 && i < allItemsToDisplay.length - 1) {
                     const rl = require('readline').createInterface({ input: process.stdin, output: process.stdout });
                     await new Promise<void>(resolve => {
@@ -89,7 +95,7 @@ export const listCommand = new Command('list')
                 }
             }
             console.log('');
-            
+
         } catch (error) {
             spinner.fail(chalk.red('Failed to fetch packages.'));
             if (error instanceof Error) {

@@ -142,6 +142,13 @@ export async function runConfigInteractive() {
  */
 export const configCommand = new Command('config')
     .description('View or update configuration (pphatdev.json)')
+    .addHelpText('after', `
+${chalk.blue.bold('Examples:')}
+  $ pphat config
+  $ pphat config get
+  $ pphat config get icons.nextjs.dir
+  $ pphat config set icons.nextjs.use true
+`)
     .action(async () => {
         await runConfigInteractive();
     });
@@ -149,6 +156,11 @@ export const configCommand = new Command('config')
 configCommand
     .command('get [key]')
     .description('Get current configuration or a specific key')
+    .addHelpText('after', `
+${chalk.blue.bold('Examples:')}
+  $ pphat config get
+  $ pphat config get icons.nextjs.dir
+`)
     .action(async (key?: string) => {
         const config = await getConfig();
         if (!key) {
@@ -170,6 +182,11 @@ configCommand
 configCommand
     .command('set <key> <value>')
     .description('Set a specific key in pphatdev.json')
+    .addHelpText('after', `
+${chalk.blue.bold('Examples:')}
+  $ pphat config set icons.nextjs.use true
+  $ pphat config set icons.nextjs.dir src/components/icons
+`)
     .action(async (key: string, value: string) => {
         const config = await getConfig();
         const configPath = path.join(process.cwd(), 'pphatdev.json');

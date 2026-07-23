@@ -23,6 +23,12 @@ export const addComponentCommand = new Command('add-component')
     .argument('[names...]', 'Names of the components to download (e.g. pphat add-component button card)')
     .option('-f, --format <format>', 'Override format to download (nextjs, nuxtjs)')
     .option('-d, --dir <dir>', 'Custom target directory to save downloaded components')
+    .addHelpText('after', `
+${chalk.blue.bold('Examples:')}
+  $ pphat add-component button card
+  $ pphat add-comp modal -f nextjs
+  $ pphat add-component button -d src/components/ui
+`)
     .action(async (names: string[], options: { format?: 'nextjs' | 'nuxtjs'; dir?: string }) => {
         if (!names || names.length === 0) {
             console.error(chalk.red('Please provide at least one component name.'));

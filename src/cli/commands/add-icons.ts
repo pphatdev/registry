@@ -23,6 +23,12 @@ export const addCommand = new Command('add-icon')
     .argument('[names...]', 'Names of the icons to download (e.g. pphat add-icon react vue github)')
     .option('-f, --format <format>', 'Override format to download (svg, nextjs, nuxtjs)')
     .option('-d, --dir <dir>', 'Custom target directory to save downloaded items')
+    .addHelpText('after', `
+${chalk.blue.bold('Examples:')}
+  $ pphat add-icon react vue github
+  $ pphat add-icon react -f nextjs
+  $ pphat add-icon github -f svg -d public/custom-icons
+`)
     .action(async (names: string[], options: { format?: 'nextjs' | 'nuxtjs' | 'svg'; dir?: string }) => {
         if (!names || names.length === 0) {
             console.error(chalk.red('Please provide at least one icon name.'));

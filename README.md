@@ -117,7 +117,7 @@ npm install -g @pphatdev/registry
 Then use the short commands:
 ```bash
 pphat init
-pphat add github
+pphat add-icon github
 ```
 
 ---

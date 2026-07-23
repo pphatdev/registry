@@ -13,6 +13,10 @@ import { CLIConfig } from '../../core/config';
 */
 export const initCommand = new Command('init')
     .description('Initialize configuration (pphatdev.json) and set up your project preferences')
+    .addHelpText('after', `
+${chalk.blue.bold('Examples:')}
+  $ pphat init
+`)
     .action(async () => {
         try {
             console.log(chalk.blue('\nWelcome to @pphatdev/registry initialization!'));
@@ -110,7 +114,7 @@ export const initCommand = new Command('init')
                     message: 'Do you want to overwrite it?',
                     default: false,
                 });
-                
+
                 if (!overwrite) {
                     console.log(chalk.gray('Initialization cancelled.'));
                     return;
@@ -121,7 +125,7 @@ export const initCommand = new Command('init')
 
             console.log(chalk.green(`\nSuccess! Configuration saved to pphatdev.json.`));
             console.log(chalk.gray(`Your items will be saved to your configured directories.\n`));
-            
+
         } catch (error) {
             console.error(chalk.red('\nInitialization cancelled or failed.'), error);
             process.exit(1);
