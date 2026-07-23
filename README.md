@@ -93,25 +93,21 @@ npx pphat ls components
 ```
 *It displays items in pages of 10, letting you use the arrow keys to browse!*
 
-### 3. Add an Item
-To download a component or icon (e.g., React, Vue, GitHub, etc.), use the `add` command:
+### 4. Add Icons or Components
+To download one or multiple icons or components, use the `add-icon` (or `add`) and `add-component` (or `add-comp`) commands:
+
 ```bash
-npx pphat add react
+# Download icons
+npx pphat add-icon react vue github
+
+# Download components
+npx pphat add-component button card modal
+
+# Download using custom format or target directory
+npx pphat add-icon react vue -d src/assets/icons
+npx pphat add-component button -f nextjs -d src/components/ui
 ```
-*It will automatically download and format it into the respective directory based on your `pphatdev.json` preferences.*
-
-#### Overriding formats on the fly:
-If you want to download an item in a specific format just once, you can pass the `-f` or `--format` flag:
-```bash
-# Download as raw SVG
-npx pphat add react -f svg
-
-# Download as Next.js React component
-npx pphat add react -f nextjs
-
-# Download as Nuxt.js Vue component
-npx pphat add react -f nuxtjs
-```
+*It will automatically download and format them into the respective directory based on your `pphatdev.json` preferences.*
 
 ## 🌍 Global Installation (Optional)
 If you plan to use it frequently across many projects, you can install it globally:

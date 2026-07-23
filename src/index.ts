@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { addCommand } from './cli/commands/add';
+import { addCommand } from './cli/commands/add-icons';
+import { addComponentCommand } from './cli/commands/add-components';
 import { initCommand } from './cli/commands/init';
 import { listCommand } from './cli/commands/list';
 import { configCommand } from './cli/commands/config';
@@ -42,6 +43,7 @@ program
   .version(version, '-v, -V, --version', 'Output the current version');
 
 program.addCommand(addCommand);
+program.addCommand(addComponentCommand);
 program.addCommand(initCommand);
 program.addCommand(listCommand);
 program.addCommand(configCommand);
