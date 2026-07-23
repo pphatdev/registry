@@ -9,6 +9,46 @@ export function toPascalCase(str: string): string {
 }
 
 /**
+/**
+* Format CSS Inside Style Tag
+* @description Formats CSS rule sets into clean single-line declarations for SVG style blocks
+*/
+export function formatCssInsideStyle(cssContent: string): string[] {
+    const clean = cssContent.replace(/\s+/g, ' ').trim();
+    if (!clean) return [];
+
+    const rules: string[] = [];
+    let depth = 0;
+    let currentRule = '';
+
+    for (let i = 0; i < clean.length; i++) {
+        const char = clean[i];
+        currentRule += char;
+        if (char === '{') {
+            depth++;
+        } else if (char === '}') {
+            depth--;
+            if (depth === 0) {
+                let ruleStr = currentRule.trim()
+                    .replace(/\s*{\s*/g, ' { ')
+                    .replace(/\s*}\s*/g, '} ')
+                    .replace(/\s*;\s*/g, '; ')
+                    .replace(/\s*:\s*/g, ': ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                ruleStr = ruleStr.replace(/;\s*}/g, ';}').replace(/{\s+/g, '{ ').replace(/\s+}/g, ' }');
+                rules.push(ruleStr);
+                currentRule = '';
+            }
+        }
+    }
+    if (currentRule.trim()) {
+        rules.push(currentRule.trim());
+    }
+    return rules;
+}
+
+/**
 * Format SVG Parts
 * @description Parses and formats the internal parts of an SVG string for component generation
 * @param content The raw SVG content string
@@ -27,49 +67,50 @@ export function formatSvgParts(content: string, baseIndent: number, tabSize: num
     const formattedAttributes = attrsMatch.map(attr => ' '.repeat(attrIndent) + attr).join('\n');
 
     let innerContent = svgMatch[2].trim();
-    innerContent = innerContent.replace(/(>)\s*(<)/g, '$1\n$2');
-    
-    const styleMatch = innerContent.match(/<style>([\s\S]*?)<\/style>/i);
-    let minStyleIndent = 0;
-    if (styleMatch) {
-        const styleLines = styleMatch[1].split('\n').filter(l => l.trim());
-        if (styleLines.length > 0) {
-            minStyleIndent = Math.min(...styleLines.map(l => l.match(/^\s*/)?.[0].length || 0));
-        }
-    }
 
-    if (isReact) {
-        innerContent = innerContent.replace(/<style>([\s\S]*?)<\/style>/gi, '<style>{`\n$1\n`}</style>');
-    }
+    // Pre-format <style> blocks before splitting HTML tags
+    const styleBlocks: string[] = [];
+    innerContent = innerContent.replace(/<style>([\s\S]*?)<\/style>/gi, (_, css) => {
+        const rules = formatCssInsideStyle(css);
+        const index = styleBlocks.length;
+        const formattedCss = rules.map(r => ' '.repeat(attrIndent + tabSize) + r).join('\n');
+        if (isReact) {
+            styleBlocks.push(' '.repeat(attrIndent) + '<style>{`\n' + formattedCss + '\n' + ' '.repeat(attrIndent) + '`}</style>');
+        } else {
+            styleBlocks.push(' '.repeat(attrIndent) + '<style>\n' + formattedCss + '\n' + ' '.repeat(attrIndent) + '</style>');
+        }
+        return `__STYLE_BLOCK_${index}__`;
+    });
+
+    innerContent = innerContent.replace(/(>)\s*(<)/g, '$1\n$2');
 
     const lines = innerContent.split('\n');
-    let formattedInner = [];
+    const formattedInner: string[] = [];
     let currentIndent = attrIndent;
-    
+
     for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
+        const line = lines[i];
         const trimmed = line.trim();
         if (!trimmed) continue;
 
-        if (trimmed.startsWith('</') && trimmed !== '</style>') {
+        if (trimmed.startsWith('__STYLE_BLOCK_') && trimmed.endsWith('__')) {
+            const index = parseInt(trimmed.replace('__STYLE_BLOCK_', '').replace('__', ''), 10);
+            if (styleBlocks[index] !== undefined) {
+                formattedInner.push(styleBlocks[index]);
+            }
+        } else if (trimmed.startsWith('</')) {
             currentIndent = Math.max(attrIndent, currentIndent - tabSize);
             formattedInner.push(' '.repeat(currentIndent) + trimmed);
-        } else if (isReact && trimmed === '`}</style>') {
-            formattedInner.push(' '.repeat(attrIndent) + trimmed);
-        } else if (trimmed.startsWith('<style')) {
-            formattedInner.push(' '.repeat(attrIndent) + (isReact ? '<style>{`' : '<style>'));
         } else if (trimmed.startsWith('<') && !trimmed.startsWith('</')) {
             formattedInner.push(' '.repeat(currentIndent) + trimmed);
             if (!trimmed.endsWith('/>') && !trimmed.includes('</')) {
                 currentIndent += tabSize;
             }
         } else {
-            let spaces = line.match(/^\s*/)?.[0].length || 0;
-            let normalizedSpaces = Math.max(0, spaces - minStyleIndent) + attrIndent + tabSize;
-            formattedInner.push(' '.repeat(normalizedSpaces) + trimmed);
+            formattedInner.push(' '.repeat(currentIndent) + trimmed);
         }
     }
-    
+
     return { attributes: formattedAttributes, rawAttributes: attrString, inner: formattedInner.join('\n') };
 }
 
