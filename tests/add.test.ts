@@ -43,7 +43,7 @@ describe('CLI Add Command (-f formats)', () => {
     test('Download as Next.js (TSX)', () => {
         execSync(`npx tsx ${cliPath} add ${testIcon} -f nextjs`, { cwd: testDir, encoding: 'utf-8' });
         
-        // The default config in getConfig() sets 'components/icons' for nextjs icons
+        // The default config in getConfig() sets 'src/components/icons' for nextjs icons
         let expectedFilePath = path.join(testDir, 'components', 'icons', `${testIcon}.tsx`);
         if (!fs.existsSync(expectedFilePath)) {
             expectedFilePath = path.join(testDir, 'components', 'icons', 'ReactIcon.tsx');
@@ -60,7 +60,7 @@ describe('CLI Add Command (-f formats)', () => {
     test('Download as Nuxt.js (Vue)', () => {
         execSync(`npx tsx ${cliPath} add ${testIcon} -f nuxtjs`, { cwd: testDir, encoding: 'utf-8' });
         
-        // The default config in getConfig() sets 'components/icons' for nuxtjs icons
+        // The default config in getConfig() sets 'src/components/icons' for nuxtjs icons
         const expectedFilePath = path.join(testDir, 'components', 'icons', `${testIcon}.vue`);
         assert.ok(fs.existsSync(expectedFilePath), `File should exist at ${expectedFilePath}`);
         

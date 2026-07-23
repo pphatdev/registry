@@ -32,37 +32,60 @@ npx pphat init
 *Here is an example of the interactive initialization process:*
 ```text
 ? What is name of config ? › Default configuration
-? What do you want to use ? (required must select one) › both
+? What do you want to use ? (required must select one) › Icons
 
-? Which directory you want to use for icons? (required must select one) › svg, nextjs, nuxtjs
-? Where do you store icon of svg ? › assets/icons
+? Which directory you want to use ? (required must select one) › Nextjs format (.tsx)
 ? Where do you store icon of nextjs ? › components/icons
-? Where do you store icon of nuxtjs ? › components/icons
-
-? Which directory you want to use for components? (required must select one) › nextjs, nuxtjs
-? Where do you store component of nextjs ? › components/ui
-? Where do you store component of nuxtjs ? › components/ui
 
 Success! Configuration saved to pphatdev.json.
 ```
 
-This generates a perfectly structured `pphatdev.json` file in the root of your project:
+This generates a perfectly structured `pphatdev.json` file in the root of your project. Formats and sections you don't select are still written out with `"use": false` and their default `dir`, so you can enable them later by flipping the flag:
 ```json
 {
-  "name": "My configuration",
+  "name": "Default configuration",
   "icons": {
-    "svg": { "dir": "assets/icons", "use": true },
-    "nextjs": { "dir": "components/icons", "use": true },
-    "nuxtjs": { "dir": "components/icons", "use": true }
+    "svg": {
+      "dir": "public/icons",
+      "use": false
+    },
+    "nextjs": {
+      "dir": "components/icons",
+      "use": true
+    },
+    "nuxtjs": {
+      "dir": "components/icons",
+      "use": false
+    }
   },
   "components": {
-    "nextjs": { "dir": "components/ui", "use": true },
-    "nuxtjs": { "dir": "components/ui", "use": true }
+    "nextjs": {
+      "dir": "components/ui",
+      "use": false
+    },
+    "nuxtjs": {
+      "dir": "components/ui",
+      "use": false
+    }
   }
 }
 ```
 
-### 2. Discover Items
+### 2. View and Update Configuration
+You can interactively update or inspect your configuration anytime using the `config` command:
+```bash
+# Interactively update your project preferences
+npx pphat config
+
+# View current configuration
+npx pphat config get
+
+# Get or set a specific config key
+npx pphat config get icons.nextjs.dir
+npx pphat config set icons.nextjs.use true
+```
+
+### 3. Discover Items
 To browse the available icons or components in the registry, you can use the `list` (or `ls`) command:
 ```bash
 npx pphat list icons

@@ -16,8 +16,8 @@
         "dist"
     ],
     "scripts": {
-        "test": "npx tsx --test tests/*.test.ts",
-        "build": "npm run build:cli && npm run build:registry",
+        "test": "npx tsx --test --experimental-test-module-mocks tests/*.test.ts",
+        "build": "npm run build:cli",
         "build:registry": "npx tsx src/scripts/build-registry.ts",
         "build:cli": "tsup src/index.ts --format cjs --dts",
         "start": "node dist/index.js",

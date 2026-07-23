@@ -28,7 +28,7 @@ describe('Config parsing (getConfig)', () => {
     test('should return default config if no file exists', async () => {
         const config = await getConfig();
         assert.strictEqual(config.name, 'Default configuration');
-        assert.strictEqual(config.icons?.svg?.dir, 'assets/icons');
+        assert.strictEqual(config.icons?.svg?.dir, 'public/icons');
         assert.strictEqual(config.components?.nextjs?.dir, 'components/ui');
     });
 

@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { addCommand } from './cli/commands/add';
 import { initCommand } from './cli/commands/init';
 import { listCommand } from './cli/commands/list';
+import { configCommand } from './cli/commands/config';
 import chalk from 'chalk';
 import { version, name } from '../package.json';
 
@@ -43,6 +44,7 @@ program
 program.addCommand(addCommand);
 program.addCommand(initCommand);
 program.addCommand(listCommand);
+program.addCommand(configCommand);
 
 // Workaround for Windows appending '/registry' when running the scoped @pphatdev/registry alias
 let args = process.argv;
