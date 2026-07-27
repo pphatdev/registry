@@ -122,6 +122,7 @@ pphat add-icon github
 
 ---
 
+
 ## 🛠 For Contributors / Registry Maintainers
 *If you are looking to update the icon registry itself, follow these steps.*
 
