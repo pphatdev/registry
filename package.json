@@ -19,6 +19,7 @@
     "scripts": {
         "test": "npx tsx --test --experimental-test-module-mocks tests/*.test.ts",
         "build": "npm run build:cli && npm run build:bin",
+        "prepack": "npm run build",
         "build:registry": "npx tsx src/scripts/build-registry.ts",
         "build:bin": "npx tsx src/scripts/build-bin.ts",
         "build:cli": "tsup src/index.ts --format cjs --dts",
