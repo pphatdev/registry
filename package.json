@@ -4,21 +4,24 @@
     "description": "CLI tool to instantly download and manage custom UI components and icons for your frontend projects",
     "main": "dist/index.js",
     "bin": {
-        "pphat": "dist/index.js",
-        "pphatdev": "dist/index.js",
-        "@pphatdev/registry": "dist/index.js"
+        "pphat": "bin/pphat.js",
+        "pphatdev": "bin/pphatdev.js",
+        "@pphatdev/registry": "bin/registry.js"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/pphatdev/registry.git"
     },
     "files": [
-        "dist"
+        "dist",
+        "bin"
     ],
     "scripts": {
         "test": "npx tsx --test --experimental-test-module-mocks tests/*.test.ts",
-        "build": "npm run build:cli",
+        "build": "npm run build:cli && npm run build:bin",
+        "prepack": "npm run build",
         "build:registry": "npx tsx src/scripts/build-registry.ts",
+        "build:bin": "npx tsx src/scripts/build-bin.ts",
         "build:cli": "tsup src/index.ts --format cjs --dts",
         "start": "node dist/index.js",
         "dev": "tsup src/index.ts --format cjs --watch"

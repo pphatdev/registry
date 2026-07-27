@@ -27,8 +27,18 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build CLI
-        run: npm run build:cli
+      - name: Build CLI and bin shims
+        run: npm run build
+
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME (=$TAG_VERSION) does not match package.json ($PKG_VERSION). Aborting."
+            exit 1
+          fi
+          echo "Tag $GITHUB_REF_NAME matches package.json version $PKG_VERSION."
 
       - name: Check if version exists
         id: check_version

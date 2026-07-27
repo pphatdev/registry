@@ -6,10 +6,14 @@ import { addComponentCommand } from './cli/commands/add-components';
 import { initCommand } from './cli/commands/init';
 import { listCommand } from './cli/commands/list';
 import { configCommand } from './cli/commands/config';
+import { statsCommand } from './cli/commands/stats';
+import { record as recordTelemetry } from './core/telemetry';
 import chalk from 'chalk';
 import { version, name } from '../package.json';
 
 const program = new Command();
+
+export const invokedAs = process.env.PPHAT_INVOKED_AS ?? 'pphat';
 
 async function checkUpdate() {
   try {
@@ -38,7 +42,7 @@ ${chalk.magenta('\n    Welcome to @pphatdev/registry! 🚀\n')}
 `;
 
 program
-  .name('pphat')
+  .name(invokedAs)
   .description('A powerful and extremely fast CLI tool to instantly download and manage custom UI components and icons.')
   .version(version, '-v, -V, --version', 'Output the current version')
   .addHelpText('after', `
@@ -59,19 +63,35 @@ program.addCommand(addComponentCommand);
 program.addCommand(initCommand);
 program.addCommand(listCommand);
 program.addCommand(configCommand);
-
-// Workaround for Windows appending '/registry' when running the scoped @pphatdev/registry alias
-let args = process.argv;
-if (args[2] === '/registry') {
-  args = [...args.slice(0, 2), ...args.slice(3)];
-}
+program.addCommand(statsCommand);
 
 async function main() {
+  const args = process.argv;
   if (args.length === 2 || (args.length === 3 && (args[2] === '-h' || args[2] === '--help'))) {
     console.log(WELCOME_MESSAGE);
   }
 
-  await program.parseAsync(args);
+  const started = Date.now();
+  const command = args[2] && !args[2].startsWith('-') ? args[2] : '(root)';
+  const cmdArgs = args.slice(3);
+  let success = true;
+
+  try {
+    await program.parseAsync(args);
+  } catch (err) {
+    success = false;
+    throw err;
+  } finally {
+    await recordTelemetry({
+      alias: invokedAs,
+      command,
+      args: cmdArgs,
+      version,
+      success,
+      durationMs: Date.now() - started,
+    });
+  }
+
   await checkUpdate();
 }
 

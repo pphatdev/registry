@@ -1,0 +1,24 @@
+name = "pphat-telemetry"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pphat-telemetry"
+database_id = "4fe51f8d-bf1c-48e8-be21-387875cf535b"
+
+# Rate limits are keyed on client IP. namespace_id is arbitrary but must be unique per binding.
+[[unsafe.bindings]]
+name = "INGEST_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 60, period = 60 }
+
+[[unsafe.bindings]]
+name = "POPULAR_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 30, period = 60 }
+
+# Set with: wrangler secret put ADMIN_TOKEN
+# Required to authorize DELETE / (admin wipe).
