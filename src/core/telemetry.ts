@@ -26,7 +26,7 @@ export const HISTORY_FILE = path.join(HISTORY_DIR, 'history.jsonl');
 //          ?type=icons|components&days=N&limit=M
 //   DELETE <endpoint>            → wipe aggregate store (admin only)
 //          Authorization: Bearer <PPHAT_ADMIN_TOKEN>
-const DEFAULT_REMOTE_ENDPOINT = '';
+const DEFAULT_REMOTE_ENDPOINT = 'https://pphat-telemetry.pphatdev.workers.dev';
 
 export function getEndpoint(): string {
     return process.env.PPHAT_TELEMETRY_ENDPOINT || DEFAULT_REMOTE_ENDPOINT;
