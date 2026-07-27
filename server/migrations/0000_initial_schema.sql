@@ -1,3 +1,8 @@
+-- Migration 0000: initial schema for the telemetry backend.
+-- Tables:
+--   events       — one row per popularity-relevant CLI run (add-icon, add-component)
+--   event_names  — one row per (user, kind, name, day) contribution, deduped for popularity ranking
+
 CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ts TEXT NOT NULL,

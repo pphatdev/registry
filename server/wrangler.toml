@@ -6,6 +6,7 @@ compatibility_date = "2025-01-01"
 binding = "DB"
 database_name = "pphat-telemetry"
 database_id = "4fe51f8d-bf1c-48e8-be21-387875cf535b"
+migrations_dir = "migrations"
 
 # Rate limits are keyed on client IP. namespace_id is arbitrary but must be unique per binding.
 [[unsafe.bindings]]

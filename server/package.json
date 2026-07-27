@@ -6,8 +6,10 @@
         "dev": "wrangler dev",
         "deploy": "wrangler deploy",
         "db:create": "wrangler d1 create pphat-telemetry",
-        "db:migrate": "wrangler d1 execute pphat-telemetry --remote --file=./schema.sql",
-        "db:migrate:local": "wrangler d1 execute pphat-telemetry --local --file=./schema.sql"
+        "db:migrate:new": "wrangler d1 migrations create pphat-telemetry",
+        "db:migrate": "wrangler d1 migrations apply pphat-telemetry --remote",
+        "db:migrate:local": "wrangler d1 migrations apply pphat-telemetry --local",
+        "db:migrate:list": "wrangler d1 migrations list pphat-telemetry --remote"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^5.20260722.1",
