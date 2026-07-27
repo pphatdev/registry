@@ -62,13 +62,40 @@ Open `server/wrangler.toml` and paste that id in place of `REPLACE_WITH_YOUR_D1_
 binding = "DB"
 database_name = "pphat-telemetry"
 database_id = "5c9a3f2b-...."
+migrations_dir = "migrations"
 ```
 
-Apply the schema:
+Apply migrations to bring the database up to date:
 
 ```bash
+npm run db:migrate            # remote (production)
+npm run db:migrate:local      # local D1 file used by `npm run dev`
+```
+
+Wrangler tracks applied migrations in a `d1_migrations` table on the database itself, so re-running is idempotent — only pending files under `server/migrations/` get applied.
+
+### Adding a new migration later
+
+```bash
+cd server
+npm run db:migrate:new add_user_agent_column
+# → creates server/migrations/0001_add_user_agent_column.sql
+```
+
+Edit the generated SQL file, then apply it with `npm run db:migrate` (or let the release workflow do it — see step 4). List applied/pending with `npm run db:migrate:list`.
+
+### One-time reset (pre-launch only)
+
+If a database was seeded with a hand-run `schema.sql` before migrations were introduced and now can't accept the migrations cleanly, drop the tables and re-migrate:
+
+```bash
+cd server
+npx wrangler d1 execute pphat-telemetry --remote --command \
+  "DROP TABLE IF EXISTS event_names; DROP TABLE IF EXISTS events; DROP TABLE IF EXISTS d1_migrations;"
 npm run db:migrate
 ```
+
+**Never do this once you have real user data** — it wipes everything.
 
 ---
 
