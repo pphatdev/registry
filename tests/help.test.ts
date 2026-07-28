@@ -11,19 +11,55 @@ describe('CLI Help Commands (-h / --help)', () => {
         assert.match(output, /A powerful and extremely fast CLI tool/);
         assert.match(output, /Examples:/);
         assert.match(output, /pphat init/);
+        // New parent commands should appear in the root help listing.
+        assert.match(output, /^\s+add\s+\[options\]/m, 'root help should list `add` parent command');
+        assert.match(output, /^\s+remove\s+\[options\]/m, 'root help should list `remove` parent command');
     });
 
-    test('Add icon command help', () => {
+    test('`add` parent help', () => {
         const output = execSync(`npx tsx ${cliPath} add -h`, { encoding: 'utf-8' });
-        assert.match(output, /Download and copy icons or components/);
+        assert.match(output, /Add icons or components/);
         assert.match(output, /-f, --format <format>/);
-        assert.match(output, /Override format to download/);
+        assert.match(output, /-d, --dir <dir>/);
+        assert.match(output, /pphat add icon /);
+        assert.match(output, /pphat add component /);
         assert.match(output, /Examples:/);
     });
 
-    test('Add component command help', () => {
+    test('`add-icon` hyphenated help', () => {
+        const output = execSync(`npx tsx ${cliPath} add-icon -h`, { encoding: 'utf-8' });
+        assert.match(output, /Download and copy icons/);
+        assert.match(output, /-f, --format <format>/);
+        assert.match(output, /Examples:/);
+    });
+
+    test('`add-component` hyphenated help', () => {
         const output = execSync(`npx tsx ${cliPath} add-component -h`, { encoding: 'utf-8' });
         assert.match(output, /Download and copy components/);
+        assert.match(output, /-f, --format <format>/);
+        assert.match(output, /Examples:/);
+    });
+
+    test('`remove` parent help', () => {
+        const output = execSync(`npx tsx ${cliPath} remove -h`, { encoding: 'utf-8' });
+        assert.match(output, /Remove previously downloaded icons or components/);
+        assert.match(output, /-f, --format <format>/);
+        assert.match(output, /-d, --dir <dir>/);
+        assert.match(output, /pphat remove icon /);
+        assert.match(output, /pphat remove component /);
+        assert.match(output, /Examples:/);
+    });
+
+    test('`remove-icon` hyphenated help', () => {
+        const output = execSync(`npx tsx ${cliPath} remove-icon -h`, { encoding: 'utf-8' });
+        assert.match(output, /Remove previously downloaded icons/);
+        assert.match(output, /-f, --format <format>/);
+        assert.match(output, /Examples:/);
+    });
+
+    test('`remove-component` hyphenated help', () => {
+        const output = execSync(`npx tsx ${cliPath} remove-component -h`, { encoding: 'utf-8' });
+        assert.match(output, /Remove previously downloaded components/);
         assert.match(output, /-f, --format <format>/);
         assert.match(output, /Examples:/);
     });

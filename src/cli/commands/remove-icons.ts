@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import { confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
@@ -10,15 +9,17 @@ import { getConfig } from '../../core/config';
 import { fetchRegistryIndex, fetchRegistryItem } from '../../core/registry';
 import { transformContent } from '../../compilers';
 
-export interface AddIconsOptions {
+export interface RemoveIconsOptions {
     format?: 'nextjs' | 'nuxtjs' | 'svg';
     dir?: string;
 }
 
 /**
-* Core add-icons logic — reused by `pphat add-icon` and `pphat add icon`.
+* Core remove-icons logic — reused by `pphat remove-icon` and `pphat remove icon`.
+* Uses the same registry lookup as `add` so the files it deletes are exactly the
+* ones an equivalent `add` would have written.
 */
-export async function runAddIcons(names: string[], options: AddIconsOptions): Promise<void> {
+export async function runRemoveIcons(names: string[], options: RemoveIconsOptions): Promise<void> {
     if (!names || names.length === 0) {
         console.error(chalk.red('Please provide at least one icon name.'));
         process.exit(1);
@@ -37,17 +38,15 @@ export async function runAddIcons(names: string[], options: AddIconsOptions): Pr
         const config = await getConfig();
 
         for (const name of names) {
-            spinner.start(`Fetching item "${name}" from registry...`);
+            spinner.start(`Looking up item "${name}"...`);
 
             const itemInfo = indexList.find(i => i.name.toLowerCase() === name.toLowerCase());
             if (!itemInfo) {
-                spinner.fail(chalk.red(`Failed to find item "${name}". Please check if it exists in the registry.`));
+                spinner.fail(chalk.red(`Failed to find item "${name}" in the registry.`));
                 continue;
             }
 
-            spinner.text = `Fetching item for "${name}"...`;
             const item = await fetchRegistryItem(itemInfo);
-
             if (!item) {
                 spinner.fail(chalk.red(`Failed to fetch item content for "${name}".`));
                 continue;
@@ -89,21 +88,16 @@ export async function runAddIcons(names: string[], options: AddIconsOptions): Pr
                     }
                 }
 
-                if (!existsSync(targetDir)) {
-                    await fs.mkdir(targetDir, { recursive: true });
-                }
+                let removed = 0;
+                let missing = 0;
 
                 for (const file of item.files) {
                     const ext = path.extname(file.path);
                     const itemName = file.path.replace(ext, '');
 
-                    let finalContent = file.content;
                     let finalPath = file.path;
-
                     if (ext === '.svg') {
-                        const transformed = transformContent(itemName, file.content, format);
-                        finalContent = transformed.content;
-                        finalPath = transformed.path;
+                        finalPath = transformContent(itemName, file.content, format).path;
                     } else {
                         if (format === 'nextjs' && ext !== '.tsx' && ext !== '.ts') continue;
                         if (format === 'nuxtjs' && ext !== '.vue' && ext !== '.js') continue;
@@ -113,24 +107,18 @@ export async function runAddIcons(names: string[], options: AddIconsOptions): Pr
                     const targetPath = path.join(targetDir, finalPath);
 
                     if (existsSync(targetPath)) {
-                        spinner.stop();
-                        const overwrite = await confirm({
-                            message: `The file ${finalPath} already exists in ${targetDir}. Do you want to overwrite it?`,
-                            default: false,
-                        });
-
-                        if (!overwrite) {
-                            console.log(chalk.yellow(`Skipped ${finalPath}.`));
-                            spinner.start();
-                            continue;
-                        }
-                        spinner.start();
+                        await fs.rm(targetPath);
+                        removed++;
+                    } else {
+                        missing++;
                     }
-
-                    await fs.writeFile(targetPath, finalContent);
                 }
 
-                spinner.succeed(chalk.green(`Successfully downloaded ${name} into ${targetDir} directory for format: ${format}`));
+                if (removed > 0) {
+                    spinner.succeed(chalk.green(`Removed ${name} from ${targetDir} (${removed} file${removed === 1 ? '' : 's'})${missing > 0 ? chalk.dim(`, ${missing} already gone`) : ''}`));
+                } else {
+                    spinner.warn(chalk.yellow(`No files for "${name}" found in ${targetDir} (format: ${format}).`));
+                }
             }
         }
 
@@ -146,21 +134,18 @@ export async function runAddIcons(names: string[], options: AddIconsOptions): Pr
 }
 
 /**
-* `pphat add-icon` — legacy hyphenated form (kept for backwards compatibility).
-* The new grammar `pphat add icon <names...>` is handled by the parent `add` command.
+* `pphat remove-icon` — hyphenated form.
+* The new grammar `pphat remove icon <names...>` is handled by the parent `remove` command.
 */
-export const addIconCommand = new Command('add-icon')
-    .description('Download and copy icons into your project')
-    .argument('[names...]', 'Names of the icons to download (e.g. pphat add-icon react vue github)')
-    .option('-f, --format <format>', 'Override format to download (svg, nextjs, nuxtjs)')
-    .option('-d, --dir <dir>', 'Custom target directory to save downloaded items')
+export const removeIconCommand = new Command('remove-icon')
+    .description('Remove previously downloaded icons from your project')
+    .argument('[names...]', 'Names of the icons to remove (e.g. pphat remove-icon react vue)')
+    .option('-f, --format <format>', 'Format to remove (svg, nextjs, nuxtjs)')
+    .option('-d, --dir <dir>', 'Custom directory the icons were saved to')
     .addHelpText('after', `
 ${chalk.blue.bold('Examples:')}
-  $ pphat add-icon react vue github
-  $ pphat add-icon react -f nextjs
-  $ pphat add-icon github -f svg -d public/custom-icons
+  $ pphat remove-icon react vue github
+  $ pphat remove-icon react -f nextjs
+  $ pphat remove-icon github -f svg -d public/custom-icons
 `)
-    .action(runAddIcons);
-
-// Legacy export name — some callers still import { addCommand }.
-export const addCommand = addIconCommand;
+    .action(runRemoveIcons);
