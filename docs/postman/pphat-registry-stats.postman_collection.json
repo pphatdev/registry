@@ -1,0 +1,279 @@
+{
+	"info": {
+		"_postman_id": "8c1b1e40-0000-4000-a000-pphatregistry01",
+		"name": "pphat-registry-stats",
+		"description": "Requests for the @pphatdev/registry telemetry backend (Cloudflare Worker + D1).\n\n**Base URL** is read from the `host` collection variable (default: `https://pphat-telemetry.pphatdev.workers.dev`). Override directly in Collection Variables to point at a self-hosted worker.\n\n**Auth**: only `Admin Reset` requires a bearer token. Set `admin_token` in Collection Variables — matching the wrangler secret configured with `wrangler secret put ADMIN_TOKEN`.\n\n**Anon ID**: the `anon_id` collection variable is a 16-char hex string used to identify ingest payloads. Generate one with `openssl rand -hex 8`. Only relevant for the `Ingest Event` request.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/health",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "Liveness + D1 connectivity probe.\n\n- `200 {status:'ok', db:'ok'}` — worker up, D1 reachable.\n- `503 {status:'degraded', db:'error', error:...}` — worker up, D1 unreachable."
+			},
+			"response": []
+		},
+		{
+			"name": "Top Icons",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/popular?type=icons&days=30&limit=20",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"popular"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "icons",
+							"description": "Required: 'icons' or 'components'."
+						},
+						{
+							"key": "days",
+							"value": "30",
+							"description": "Optional rolling window in days. Omit for all-time."
+						},
+						{
+							"key": "limit",
+							"value": "20",
+							"description": "1-100. Defaults to 10 if omitted."
+						}
+					]
+				},
+				"description": "Returns `{ rows: [[name, count], ...] }` deduplicated per (anon_id, name, day). Heavy users don't skew the count."
+			},
+			"response": []
+		},
+		{
+			"name": "Top Components",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/popular?type=components&days=30&limit=20",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"popular"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "components",
+							"description": "Required: 'icons' or 'components'."
+						},
+						{
+							"key": "days",
+							"value": "30",
+							"description": "Optional rolling window in days. Omit for all-time."
+						},
+						{
+							"key": "limit",
+							"value": "20",
+							"description": "1-100. Defaults to 10 if omitted."
+						}
+					]
+				},
+				"description": "Same shape as Top Icons but scoped to `add-component` / `add-comp` events."
+			},
+			"response": []
+		},
+		{
+			"name": "Top Icons (All-Time)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/popular?type=icons&limit=50",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"popular"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "icons"
+						},
+						{
+							"key": "limit",
+							"value": "50"
+						}
+					]
+				},
+				"description": "Top 50 icons across the whole dataset (no `days` filter)."
+			},
+			"response": []
+		},
+		{
+			"name": "Ingest Event",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.variables.set('now_iso', new Date().toISOString());"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "User-Agent",
+						"value": "pphat-cli/postman (postman-runner)"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"ts\": \"{{now_iso}}\",\n  \"id\": \"{{anon_id}}\",\n  \"alias\": \"pphat\",\n  \"command\": \"add-icon\",\n  \"args\": [\"react\", \"vue\"],\n  \"version\": \"1.4.0\",\n  \"os\": \"linux\",\n  \"node\": \"22.0.0\",\n  \"success\": true,\n  \"durationMs\": 1200\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Simulates what the CLI POSTs after an `add-icon` or `add-component` run.\n\n- `ts` is filled in from a pre-request script.\n- `id` uses the `anon_id` collection variable — set it to a 16-char hex string.\n- Other commands (stats, list, config, init) are acknowledged with `200 'ok'` but not stored — only `add-icon`, `add`, `add-component`, `add-comp` insert rows.\n- Rate limit: 60 requests / 60s per client IP."
+			},
+			"response": []
+		},
+		{
+			"name": "Ingest — Non-Popularity Command (dropped)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.variables.set('now_iso', new Date().toISOString());"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"ts\": \"{{now_iso}}\",\n  \"id\": \"{{anon_id}}\",\n  \"alias\": \"pphat\",\n  \"command\": \"stats\",\n  \"args\": [],\n  \"version\": \"1.4.0\",\n  \"success\": true,\n  \"durationMs\": 5\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Sanity check: proves the worker accepts (200 'ok') but does NOT persist events for commands other than add-icon/add-component. Handy when validating that the classifier is behaving."
+			},
+			"response": []
+		},
+		{
+			"name": "Admin Reset (wipe DB)",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"description": "Value of the ADMIN_TOKEN secret set via `wrangler secret put ADMIN_TOKEN`."
+					},
+					{
+						"key": "User-Agent",
+						"value": "pphat-cli-admin"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "DESTRUCTIVE — deletes every row in `events` and `event_names`. Requires the correct bearer token or returns 401.\n\nEquivalent to `pphat stats --reset-remote` on the CLI. Not rate-limited; still, don't hammer it."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "https://pphat-telemetry.pphatdev.workers.dev",
+			"type": "string",
+			"description": "Base URL of the telemetry worker. Override in Collection Variables for self-hosted deployments."
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string",
+			"description": "Bearer token for the Admin Reset endpoint. Set via `wrangler secret put ADMIN_TOKEN` on the worker side."
+		},
+		{
+			"key": "anon_id",
+			"value": "0000000000000000",
+			"type": "string",
+			"description": "16-char hex identifier used in Ingest Event payloads. Generate a fresh one with `openssl rand -hex 8`."
+		}
+	]
+}

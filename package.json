@@ -1,6 +1,6 @@
 {
     "name": "@pphatdev/registry",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "CLI tool to instantly download and manage custom UI components and icons for your frontend projects",
     "main": "dist/index.js",
     "bin": {
@@ -43,7 +43,7 @@
     "publishConfig": {
         "access": "public"
     },
-    "homepage": "https://github.com/pphatdev/registry",
+    "homepage": "https://registry.pphat.me",
     "bugs": {
         "url": "https://github.com/pphatdev/registry/issues"
     },

@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { addCommand } from './cli/commands/add-icons';
+import { addIconCommand } from './cli/commands/add-icons';
 import { addComponentCommand } from './cli/commands/add-components';
+import { addCommand } from './cli/commands/add';
+import { removeIconCommand } from './cli/commands/remove-icons';
+import { removeComponentCommand } from './cli/commands/remove-components';
+import { removeCommand } from './cli/commands/remove';
 import { initCommand } from './cli/commands/init';
 import { listCommand } from './cli/commands/list';
 import { configCommand } from './cli/commands/config';
@@ -48,9 +52,11 @@ program
   .addHelpText('after', `
 ${chalk.blue.bold('Examples:')}
   $ pphat init
-  $ pphat add-icon react vue github
+  $ pphat add icon react vue github
   $ pphat add-icon react -f nextjs -d src/components/icons
-  $ pphat add-component button card
+  $ pphat add component button card
+  $ pphat remove icon react vue
+  $ pphat remove-component modal
   $ pphat list icons
   $ pphat list components
   $ pphat config
@@ -59,7 +65,11 @@ ${chalk.blue.bold('Examples:')}
 `);
 
 program.addCommand(addCommand);
+program.addCommand(addIconCommand);
 program.addCommand(addComponentCommand);
+program.addCommand(removeCommand);
+program.addCommand(removeIconCommand);
+program.addCommand(removeComponentCommand);
 program.addCommand(initCommand);
 program.addCommand(listCommand);
 program.addCommand(configCommand);

@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import { confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
@@ -10,15 +9,15 @@ import { getConfig } from '../../core/config';
 import { fetchRegistryIndex, fetchRegistryItem } from '../../core/registry';
 import { transformContent } from '../../compilers';
 
-export interface AddComponentsOptions {
+export interface RemoveComponentsOptions {
     format?: 'nextjs' | 'nuxtjs';
     dir?: string;
 }
 
 /**
-* Core add-components logic — reused by `pphat add-component` and `pphat add component`.
+* Core remove-components logic — reused by `pphat remove-component` and `pphat remove component`.
 */
-export async function runAddComponents(names: string[], options: AddComponentsOptions): Promise<void> {
+export async function runRemoveComponents(names: string[], options: RemoveComponentsOptions): Promise<void> {
     if (!names || names.length === 0) {
         console.error(chalk.red('Please provide at least one component name.'));
         process.exit(1);
@@ -37,17 +36,15 @@ export async function runAddComponents(names: string[], options: AddComponentsOp
         const config = await getConfig();
 
         for (const name of names) {
-            spinner.start(`Fetching component "${name}" from registry...`);
+            spinner.start(`Looking up component "${name}"...`);
 
             const itemInfo = indexList.find(i => i.name.toLowerCase() === name.toLowerCase());
             if (!itemInfo) {
-                spinner.fail(chalk.red(`Failed to find component "${name}". Please check if it exists in the registry.`));
+                spinner.fail(chalk.red(`Failed to find component "${name}" in the registry.`));
                 continue;
             }
 
-            spinner.text = `Fetching component content for "${name}"...`;
             const item = await fetchRegistryItem(itemInfo);
-
             if (!item) {
                 spinner.fail(chalk.red(`Failed to fetch component content for "${name}".`));
                 continue;
@@ -82,21 +79,16 @@ export async function runAddComponents(names: string[], options: AddComponentsOp
                     }
                 }
 
-                if (!existsSync(targetDir)) {
-                    await fs.mkdir(targetDir, { recursive: true });
-                }
+                let removed = 0;
+                let missing = 0;
 
                 for (const file of item.files) {
                     const ext = path.extname(file.path);
                     const itemName = file.path.replace(ext, '');
 
-                    let finalContent = file.content;
                     let finalPath = file.path;
-
                     if (ext === '.svg') {
-                        const transformed = transformContent(itemName, file.content, format);
-                        finalContent = transformed.content;
-                        finalPath = transformed.path;
+                        finalPath = transformContent(itemName, file.content, format).path;
                     } else {
                         if (format === 'nextjs' && ext !== '.tsx' && ext !== '.ts') continue;
                         if (format === 'nuxtjs' && ext !== '.vue' && ext !== '.js') continue;
@@ -105,24 +97,18 @@ export async function runAddComponents(names: string[], options: AddComponentsOp
                     const targetPath = path.join(targetDir, finalPath);
 
                     if (existsSync(targetPath)) {
-                        spinner.stop();
-                        const overwrite = await confirm({
-                            message: `The file ${finalPath} already exists in ${targetDir}. Do you want to overwrite it?`,
-                            default: false,
-                        });
-
-                        if (!overwrite) {
-                            console.log(chalk.yellow(`Skipped ${finalPath}.`));
-                            spinner.start();
-                            continue;
-                        }
-                        spinner.start();
+                        await fs.rm(targetPath);
+                        removed++;
+                    } else {
+                        missing++;
                     }
-
-                    await fs.writeFile(targetPath, finalContent);
                 }
 
-                spinner.succeed(chalk.green(`Successfully downloaded component ${name} into ${targetDir} directory for format: ${format}`));
+                if (removed > 0) {
+                    spinner.succeed(chalk.green(`Removed component ${name} from ${targetDir} (${removed} file${removed === 1 ? '' : 's'})${missing > 0 ? chalk.dim(`, ${missing} already gone`) : ''}`));
+                } else {
+                    spinner.warn(chalk.yellow(`No files for component "${name}" found in ${targetDir} (format: ${format}).`));
+                }
             }
         }
 
@@ -138,19 +124,19 @@ export async function runAddComponents(names: string[], options: AddComponentsOp
 }
 
 /**
-* `pphat add-component` — legacy hyphenated form (kept for backwards compatibility).
-* The new grammar `pphat add component <names...>` is handled by the parent `add` command.
+* `pphat remove-component` — hyphenated form (with `remove-comp` alias).
+* The new grammar `pphat remove component <names...>` is handled by the parent `remove` command.
 */
-export const addComponentCommand = new Command('add-component')
-    .alias('add-comp')
-    .description('Download and copy components into your project')
-    .argument('[names...]', 'Names of the components to download (e.g. pphat add-component button card)')
-    .option('-f, --format <format>', 'Override format to download (nextjs, nuxtjs)')
-    .option('-d, --dir <dir>', 'Custom target directory to save downloaded components')
+export const removeComponentCommand = new Command('remove-component')
+    .alias('remove-comp')
+    .description('Remove previously downloaded components from your project')
+    .argument('[names...]', 'Names of the components to remove (e.g. pphat remove-component button card)')
+    .option('-f, --format <format>', 'Format to remove (nextjs, nuxtjs)')
+    .option('-d, --dir <dir>', 'Custom directory the components were saved to')
     .addHelpText('after', `
 ${chalk.blue.bold('Examples:')}
-  $ pphat add-component button card
-  $ pphat add-comp modal -f nextjs
-  $ pphat add-component button -d src/components/ui
+  $ pphat remove-component button card
+  $ pphat remove-comp modal -f nextjs
+  $ pphat remove-component button -d src/components/ui
 `)
-    .action(runAddComponents);
+    .action(runRemoveComponents);

@@ -38,7 +38,7 @@ describe('CLI Config Command', () => {
         fs.writeFileSync(configPath, JSON.stringify(initialConfig, null, 2));
 
         const { configCommand } = await import('../src/cli/commands/config');
-        await configCommand.parseAsync(['node', 'config', 'set', 'icons.nextjs.use', 'true'], { from: 'user' });
+        await configCommand.parseAsync(['set', 'icons.nextjs.use', 'true'], { from: 'user' });
 
         const updated = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         assert.strictEqual(updated.icons.nextjs.use, true);
@@ -49,7 +49,7 @@ describe('CLI Config Command', () => {
         fs.writeFileSync(configPath, JSON.stringify(initialConfig, null, 2));
 
         const { configCommand } = await import('../src/cli/commands/config');
-        await configCommand.parseAsync(['node', 'config', 'set', 'icons.svg.dir', 'custom/svg'], { from: 'user' });
+        await configCommand.parseAsync(['set', 'icons.svg.dir', 'custom/svg'], { from: 'user' });
 
         const updated = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         assert.strictEqual(updated.icons.svg.dir, 'custom/svg');
