@@ -1,0 +1,74 @@
+name: Development Workflow
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Notify Telegram - Started
+        uses: pphatdev/telegrambot-alert-action@v1
+        with:
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
+          status: started
+          stage: Build
+          environment: development
+          extra: "<b>Branch:</b> ${{ github.ref_name }}\n<b>Commit:</b> ${{ github.sha }}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Build CLI and bin shims
+        run: npm run build
+
+      - name: Notify Telegram - Success
+        if: success()
+        uses: pphatdev/telegrambot-alert-action@v1
+        with:
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
+          status: success
+          stage: Build
+          environment: development
+          extra: "<b>Branch:</b> ${{ github.ref_name }}\n<b>Run:</b> ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Notify Telegram - Failure
+        if: failure()
+        uses: pphatdev/telegrambot-alert-action@v1
+        with:
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
+          status: failure
+          stage: Build
+          environment: development
+          extra: "<b>Branch:</b> ${{ github.ref_name }}\n<b>Run:</b> ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Notify Telegram - Cancelled
+        if: cancelled()
+        uses: pphatdev/telegrambot-alert-action@v1
+        with:
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
+          status: cancelled
+          stage: Build
+          environment: development
+          extra: "<b>Branch:</b> ${{ github.ref_name }}"
