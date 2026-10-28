@@ -14,6 +14,10 @@ export interface CLIConfig {
         nextjs?: { dir?: string; use?: boolean };
         nuxtjs?: { dir?: string; use?: boolean };
     };
+    skills?: {
+        dir?: string;
+        use?: boolean;
+    };
 }
 
 /**
@@ -34,6 +38,10 @@ export async function getConfig(): Promise<CLIConfig> {
         components: {
             nextjs: { dir: 'components/ui', use: false },
             nuxtjs: { dir: 'components/ui', use: false }
+        },
+        skills: {
+            dir: '.agent/skills',
+            use: true
         }
     };
 

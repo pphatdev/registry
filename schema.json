@@ -94,6 +94,21 @@
                 }
             },
             "additionalProperties": false
+        },
+        "skills": {
+            "type": "object",
+            "description": "Skills download and management configuration",
+            "properties": {
+                "dir": {
+                    "type": "string",
+                    "description": "Target directory for installed skills (e.g., .agent/skills)"
+                },
+                "use": {
+                    "type": "boolean",
+                    "description": "Enable skills management"
+                }
+            },
+            "additionalProperties": true
         }
     },
     "additionalProperties": true
