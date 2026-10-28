@@ -13,3 +13,8 @@ tests/temp_*
 tests/mock_*
 pnpm-lock.yaml
 pnpm-workspace.yaml
+
+
+
+DRAFT_*.md
+draft_*.md

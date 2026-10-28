@@ -1,6 +1,6 @@
 {
     "name": "@pphatdev/registry",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "description": "CLI tool to instantly download and manage custom UI components and icons for your frontend projects",
     "main": "dist/index.js",
     "bin": {
@@ -50,7 +50,8 @@
     "license": "MIT",
     "dependencies": {
         "@clack/prompts": "^1.8.1",
-        "@inquirer/prompts": "^8.5.2",
+        "@inquirer/prompts": "^8.7.5",
+        "@typescript/typescript6": "^6.0.2",
         "chalk": "^6.0.1",
         "commander": "^15.0.0",
         "ora": "^9.4.1"
@@ -59,6 +60,6 @@
         "@types/node": "^26.6.5",
         "tsup": "^9.0.0",
         "tsx": "^4.23.15",
-        "typescript": "^7.0.2"
+        "typescript": "^5.9.3"
     }
 }
