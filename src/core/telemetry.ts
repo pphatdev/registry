@@ -38,6 +38,25 @@ function isDisabled(argv: string[]): boolean {
     return false;
 }
 
+/**
+ * Sanitize Command Arguments
+ * @description Redacts sensitive tokens, credentials, and authentication details from CLI arguments
+ * @param args Raw argument strings
+ * @returns Array of sanitized argument strings
+ */
+export function sanitizeArgs(args: string[]): string[] {
+    return args.map(arg => {
+        let sanitized = arg;
+        // Redact auth in URLs (e.g. https://user:pass@host or https://token@host)
+        sanitized = sanitized.replace(/(https?:\/\/)([^@\s/]+)@/g, '$1[REDACTED]@');
+        // Redact GitHub, GitLab, and NPM personal access tokens
+        sanitized = sanitized.replace(/(gh[pousr]_[A-Za-z0-9_]{16,}|glpat-[A-Za-z0-9_\-]{20,}|npm_[A-Za-z0-9_]{16,})/g, '[REDACTED_TOKEN]');
+        // Redact generic token or key arguments (e.g. --token=<val> or --token <val>)
+        sanitized = sanitized.replace(/(--(?:token|key|secret|password|auth)[=\s])([^\s]+)/gi, '$1[REDACTED]');
+        return sanitized;
+    });
+}
+
 export function anonymousId(): string {
     const seed = `${os.hostname()}|${os.userInfo().username}`;
     return crypto.createHash('sha256').update(seed).digest('hex').slice(0, 16);
@@ -75,7 +94,12 @@ async function sendRemote(event: RunEvent): Promise<void> {
 
 export async function record(event: Omit<RunEvent, 'ts'>): Promise<void> {
     if (isDisabled(process.argv)) return;
-    const full: RunEvent = { ts: new Date().toISOString(), ...event };
+    const sanitizedArgs = sanitizeArgs(event.args || []);
+    const full: RunEvent = {
+        ts: new Date().toISOString(),
+        ...event,
+        args: sanitizedArgs
+    };
     try {
         await appendLocal(full);
     } catch {
