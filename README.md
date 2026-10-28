@@ -109,6 +109,41 @@ npx pphat add-component button -f nextjs -d src/components/ui
 ```
 *It will automatically download and format them into the respective directory based on your `pphatdev.json` preferences.*
 
+### 5. Manage AI Agent Skills (Install, Update, Remove)
+You can install, update, and remove AI agent skills (from GitHub repositories, URLs, or local directories) with a seamless, interactive workflow just like `skills.sh` (`npx skills`):
+
+```bash
+# Interactive skill & agent selection wizard
+npx pphat add skill pphatdev/skills
+
+# Install multiple skill repositories in one go
+npx pphat add skill pphatdev/skills pphatdev/skills1 pphatdev/skills2
+
+# Inspect repository contents without installing
+npx pphat add skill pphatdev/skills --list
+
+# Target specific skills from a repository
+npx pphat add skill pphatdev/skills --skill reporting-and-analytics
+
+# Target specific coding agents (e.g. claude, cursor, agent)
+npx pphat add skill pphatdev/skills -a claude cursor
+
+# Non-interactive / CI-friendly mode (accept defaults)
+npx pphat add skill pphatdev/skills --all -y
+
+# Update installed skills (or omit names to update all installed skills)
+npx pphat update skill pphatdev/skills
+npx pphat update skill
+
+# Remove skills (by repository source or individual skill name)
+npx pphat remove skill pphatdev/skills pphatdev/skills2
+
+# List all currently installed skills
+npx pphat list skills
+```
+
+Installed skills are tracked in `skills-lock.json` and `.skills.json` (with deterministic SHA-256 integrity hashes), and saved to your target agent directory (e.g. `.agent/skills/`, `.claude/skills/`, `.cursor/skills/`).
+
 ## 🌍 Global Installation (Optional)
 If you plan to use it frequently across many projects, you can install it globally:
 ```bash

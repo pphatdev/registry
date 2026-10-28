@@ -8,3 +8,8 @@ registry/
 .env
 
 .claude/
+.skills.json
+tests/temp_*
+tests/mock_*
+pnpm-lock.yaml
+pnpm-workspace.yaml
