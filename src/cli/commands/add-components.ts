@@ -102,7 +102,12 @@ export async function runAddComponents(names: string[], options: AddComponentsOp
                         if (format === 'nuxtjs' && ext !== '.vue' && ext !== '.js') continue;
                     }
 
-                    const targetPath = path.join(targetDir, finalPath);
+                    const targetPath = path.resolve(targetDir, finalPath);
+                    const resolvedTargetDir = path.resolve(targetDir);
+                    if (!targetPath.startsWith(resolvedTargetDir + path.sep) && targetPath !== resolvedTargetDir) {
+                        spinner.fail(chalk.red(`Security error: File path "${finalPath}" escapes target directory.`));
+                        continue;
+                    }
 
                     if (existsSync(targetPath)) {
                         spinner.stop();

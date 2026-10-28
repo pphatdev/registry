@@ -144,6 +144,48 @@ export function resolveAgentDirs(agentIds: string[], isGlobal: boolean = false, 
 }
 
 /**
+ * Validate Skill Name
+ * @description Validates that a skill name does not contain path traversal characters,
+ * directory separators, or illegal filesystem characters.
+ * @param name The skill name to validate
+ * @returns true if valid, false otherwise
+ */
+export function isValidSkillName(name: string): boolean {
+    if (!name || typeof name !== 'string') return false;
+    const trimmed = name.trim();
+    if (!trimmed || trimmed.length > 128) return false;
+    // Reject path traversal and path separators
+    if (
+        trimmed.includes('..') ||
+        trimmed.includes('/') ||
+        trimmed.includes('\\') ||
+        trimmed.includes('\0')
+    ) {
+        return false;
+    }
+    // Reject leading dots (hidden files/directories)
+    if (trimmed.startsWith('.')) return false;
+    // Only allow alphanumeric, dash, underscore, and dot in between
+    return /^[a-zA-Z0-9_\-\.]+$/.test(trimmed);
+}
+
+/**
+ * Assert Path Is Safe Inside Parent
+ * @description Validates that childPath resides strictly within parentDir, preventing path traversal
+ * @param parentDir The trusted base directory
+ * @param childPath The relative or sub-path to evaluate
+ * @returns The resolved safe child path
+ */
+export function assertSafeChildPath(parentDir: string, childPath: string): string {
+    const resolvedParent = path.resolve(parentDir);
+    const resolvedChild = path.resolve(resolvedParent, childPath);
+    if (!resolvedChild.startsWith(resolvedParent + path.sep)) {
+        throw new Error(`Path traversal detected: "${childPath}" escapes base directory "${parentDir}".`);
+    }
+    return resolvedChild;
+}
+
+/**
 * Parse Skill Source
 * @description Parses a skill source string (repo shorthand, git URL, or local path) into structured components
 * @param source The raw skill source string
@@ -526,7 +568,11 @@ export async function discoverSkills(
 ): Promise<DiscoveredSkill[]> {
     // 1. Explicit subpath targeted
     if (subpath) {
-        const targetPath = path.join(repoDir, subpath);
+        const targetPath = path.resolve(repoDir, subpath);
+        const resolvedRepo = path.resolve(repoDir);
+        if (!targetPath.startsWith(resolvedRepo + path.sep) && targetPath !== resolvedRepo) {
+            throw new Error(`Security error: subpath "${subpath}" escapes repository directory.`);
+        }
         if (existsSync(targetPath)) {
             const skillMd = path.join(targetPath, 'SKILL.md');
             let name = path.basename(subpath);
@@ -536,7 +582,7 @@ export async function discoverSkills(
                 try {
                     const content = await fs.readFile(skillMd, 'utf-8');
                     const fm = parseSkillFrontmatter(content);
-                    if (fm.name) name = fm.name;
+                    if (fm.name && isValidSkillName(fm.name)) name = fm.name;
                     description = fm.description;
                 } catch {
                     // ignore read error
@@ -568,7 +614,7 @@ export async function discoverSkills(
                         try {
                             const content = await fs.readFile(skillMd, 'utf-8');
                             const fm = parseSkillFrontmatter(content);
-                            if (fm.name) name = fm.name;
+                            if (fm.name && isValidSkillName(fm.name)) name = fm.name;
                             description = fm.description;
                         } catch {
                             // ignore read error
@@ -603,7 +649,7 @@ export async function discoverSkills(
                     try {
                         const content = await fs.readFile(skillMd, 'utf-8');
                         const fm = parseSkillFrontmatter(content);
-                        if (fm.name) name = fm.name;
+                        if (fm.name && isValidSkillName(fm.name)) name = fm.name;
                         description = fm.description;
                     } catch {
                         // ignore
@@ -629,7 +675,7 @@ export async function discoverSkills(
         try {
             const content = await fs.readFile(rootSkillMd, 'utf-8');
             const fm = parseSkillFrontmatter(content);
-            if (fm.name) name = fm.name;
+            if (fm.name && isValidSkillName(fm.name)) name = fm.name;
             description = fm.description;
         } catch {
             // ignore
@@ -654,7 +700,11 @@ export async function installSkill(
     targetSkillsDir: string,
     skillName: string
 ): Promise<string> {
-    const destDir = path.join(targetSkillsDir, skillName);
+    if (!isValidSkillName(skillName)) {
+        throw new Error(`Invalid skill name: "${skillName}". Only alphanumeric characters, dashes, and underscores are allowed.`);
+    }
+
+    const destDir = assertSafeChildPath(targetSkillsDir, skillName);
 
     if (!existsSync(targetSkillsDir)) {
         await fs.mkdir(targetSkillsDir, { recursive: true });
@@ -776,8 +826,14 @@ export async function searchSkills(query: string = ''): Promise<SkillSearchResul
 * @returns Boolean indicating whether deletion took place
 */
 export async function removeSkillFiles(skillPath: string): Promise<boolean> {
-    if (existsSync(skillPath)) {
-        await fs.rm(skillPath, { recursive: true, force: true });
+    const resolved = path.resolve(skillPath);
+    const home = os.homedir();
+    // Safety check: Never delete filesystem root, home directory, or current project root
+    if (resolved === '/' || resolved === home || resolved === process.cwd()) {
+        throw new Error(`Security error: Refusing to delete protected path "${resolved}".`);
+    }
+    if (existsSync(resolved)) {
+        await fs.rm(resolved, { recursive: true, force: true });
         return true;
     }
     return false;

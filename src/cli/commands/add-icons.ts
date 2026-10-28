@@ -110,7 +110,12 @@ export async function runAddIcons(names: string[], options: AddIconsOptions): Pr
                         if (format === 'svg' && ext !== '.svg') continue;
                     }
 
-                    const targetPath = path.join(targetDir, finalPath);
+                    const targetPath = path.resolve(targetDir, finalPath);
+                    const resolvedTargetDir = path.resolve(targetDir);
+                    if (!targetPath.startsWith(resolvedTargetDir + path.sep) && targetPath !== resolvedTargetDir) {
+                        spinner.fail(chalk.red(`Security error: File path "${finalPath}" escapes target directory.`));
+                        continue;
+                    }
 
                     if (existsSync(targetPath)) {
                         spinner.stop();

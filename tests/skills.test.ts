@@ -282,4 +282,57 @@ describe('CLI Skills Management (add, update, remove, list)', () => {
             }
         );
     });
+
+    test('Supply Chain Security: isValidSkillName rejects traversal and invalid identifiers', async () => {
+        const { isValidSkillName, assertSafeChildPath } = await import('../src/core/skills');
+
+        assert.strictEqual(isValidSkillName('my-skill'), true);
+        assert.strictEqual(isValidSkillName('react_docs'), true);
+        assert.strictEqual(isValidSkillName('skill.v1'), true);
+
+        // Path traversal attempts
+        assert.strictEqual(isValidSkillName('../../bad'), false);
+        assert.strictEqual(isValidSkillName('../bad'), false);
+        assert.strictEqual(isValidSkillName('foo/bar'), false);
+        assert.strictEqual(isValidSkillName('foo\\bar'), false);
+        assert.strictEqual(isValidSkillName('/etc/passwd'), false);
+        assert.strictEqual(isValidSkillName('.hidden'), false);
+        assert.strictEqual(isValidSkillName(''), false);
+
+        // assertSafeChildPath throws on traversal
+        assert.throws(() => assertSafeChildPath('/tmp/base', '../../etc'));
+        assert.throws(() => assertSafeChildPath('/tmp/base', '/etc/passwd'));
+        assert.strictEqual(assertSafeChildPath('/tmp/base', 'subfolder'), path.resolve('/tmp/base', 'subfolder'));
+    });
+
+    test('Supply Chain Security: installSkill throws error if skillName attempts traversal', async () => {
+        const { installSkill } = await import('../src/core/skills');
+        const targetDir = path.join(testDir, 'security-target');
+
+        await assert.rejects(
+            async () => {
+                await installSkill(mockRepoDir, targetDir, '../../evil-dir');
+            },
+            /Invalid skill name/
+        );
+    });
+
+    test('Supply Chain Security: telemetry sanitizeArgs redacts tokens and URL credentials', async () => {
+        const { sanitizeArgs } = await import('../src/core/telemetry');
+
+        const inputs = [
+            'add',
+            'skill',
+            'https://user:secretPassword123@github.com/org/repo.git',
+            '--token=ghp_ABC1234567890abcdefghijklmnopqrstuvwxyz',
+            'npm_testtoken1234567890abcdef'
+        ];
+
+        const sanitized = sanitizeArgs(inputs);
+        assert.strictEqual(sanitized[0], 'add');
+        assert.strictEqual(sanitized[1], 'skill');
+        assert.strictEqual(sanitized[2], 'https://[REDACTED]@github.com/org/repo.git');
+        assert.strictEqual(sanitized[3], '--token=[REDACTED]');
+        assert.strictEqual(sanitized[4], '[REDACTED_TOKEN]');
+    });
 });

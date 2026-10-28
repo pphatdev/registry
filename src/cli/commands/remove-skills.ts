@@ -9,7 +9,8 @@ import {
     saveSkillsManifest,
     loadSkillsLock,
     saveSkillsLock,
-    removeSkillFiles
+    removeSkillFiles,
+    isValidSkillName
 } from '../../core/skills';
 
 export interface RemoveSkillsOptions {
@@ -112,17 +113,19 @@ export async function runRemoveSkills(targets: string[], options: RemoveSkillsOp
         }
 
         // 4. Fallback: check direct folder existence in targetDir
-        const directPath = path.join(defaultTargetDir, target);
-        if (await removeSkillFiles(directPath)) {
-            delete lock.skills[target];
-            await saveSkillsLock(lock, process.cwd());
-            spinner.succeed(chalk.green(`Removed skill directory "${target}".`));
-            continue;
+        if (isValidSkillName(target)) {
+            const directPath = path.join(defaultTargetDir, target);
+            if (await removeSkillFiles(directPath)) {
+                delete lock.skills[target];
+                await saveSkillsLock(lock, process.cwd());
+                spinner.succeed(chalk.green(`Removed skill directory "${target}".`));
+                continue;
+            }
         }
 
         // 5. Fallback: check by repo name if user passed owner/repo
         const repoName = target.split('/').pop();
-        if (repoName && repoName !== target) {
+        if (repoName && repoName !== target && isValidSkillName(repoName)) {
             const repoPath = path.join(defaultTargetDir, repoName);
             if (await removeSkillFiles(repoPath)) {
                 delete lock.skills[repoName];
