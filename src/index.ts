@@ -52,7 +52,7 @@ ${chalk.magenta('\n    Welcome to @pphatdev/registry! 🚀\n')}
 program
   .name(invokedAs)
   .description('A powerful and extremely fast CLI tool to instantly download and manage custom UI components and icons.')
-  .version(version, '-v, -V, --version', 'Output the current version')
+  .version(version, '-v, --version', 'Output the current version')
   .addHelpText('after', `
 ${chalk.blue.bold('Examples:')}
   $ pphat init
