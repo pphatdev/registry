@@ -27,7 +27,7 @@ jobs:
           extra: "<b>Branch:</b> ${{ github.ref_name }}\n<b>Commit:</b> ${{ github.sha }}"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '20.x'
 
