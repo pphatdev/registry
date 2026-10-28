@@ -3,9 +3,13 @@
 import { Command } from 'commander';
 import { addIconCommand } from './cli/commands/add-icons';
 import { addComponentCommand } from './cli/commands/add-components';
+import { addSkillCommand } from './cli/commands/add-skills';
 import { addCommand } from './cli/commands/add';
+import { updateCommand } from './cli/commands/update';
+import { updateSkillCommand } from './cli/commands/update-skills';
 import { removeIconCommand } from './cli/commands/remove-icons';
 import { removeComponentCommand } from './cli/commands/remove-components';
+import { removeSkillCommand } from './cli/commands/remove-skills';
 import { removeCommand } from './cli/commands/remove';
 import { initCommand } from './cli/commands/init';
 import { listCommand } from './cli/commands/list';
@@ -55,10 +59,14 @@ ${chalk.blue.bold('Examples:')}
   $ pphat add icon react vue github
   $ pphat add-icon react -f nextjs -d src/components/icons
   $ pphat add component button card
+  $ pphat add skill pphatdev/skills
+  $ pphat update skill pphatdev/skills
   $ pphat remove icon react vue
   $ pphat remove-component modal
+  $ pphat remove skill pphatdev/skills
   $ pphat list icons
   $ pphat list components
+  $ pphat list skills
   $ pphat config
   $ pphat config get icons.nextjs.dir
   $ pphat config set icons.nextjs.use true
@@ -67,9 +75,13 @@ ${chalk.blue.bold('Examples:')}
 program.addCommand(addCommand);
 program.addCommand(addIconCommand);
 program.addCommand(addComponentCommand);
+program.addCommand(addSkillCommand);
+program.addCommand(updateCommand);
+program.addCommand(updateSkillCommand);
 program.addCommand(removeCommand);
 program.addCommand(removeIconCommand);
 program.addCommand(removeComponentCommand);
+program.addCommand(removeSkillCommand);
 program.addCommand(initCommand);
 program.addCommand(listCommand);
 program.addCommand(configCommand);
