@@ -49,6 +49,7 @@
     },
     "license": "MIT",
     "dependencies": {
+        "@clack/prompts": "^1.8.1",
         "@inquirer/prompts": "^8.5.2",
         "chalk": "^4.1.2",
         "commander": "^12.1.0",
@@ -57,6 +58,7 @@
     "devDependencies": {
         "@types/node": "^20.12.12",
         "tsup": "^8.0.2",
+        "tsx": "^4.23.15",
         "typescript": "^5.4.5"
     }
 }
