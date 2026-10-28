@@ -89,7 +89,7 @@ describe('CLI Init Command', () => {
 
     async function runInit() {
         const mod = await import('../src/cli/commands/init');
-        await mod.initCommand.parseAsync(['node', 'init'], { from: 'user' });
+        await mod.initCommand.parseAsync([], { from: 'user' });
     }
 
     test('Icons only + SVG selected → unselected icon formats get use:false, no components section', async () => {
