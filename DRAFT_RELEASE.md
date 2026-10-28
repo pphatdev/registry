@@ -118,7 +118,7 @@ pphat list skills
 
 - **Path Traversal Protection:**
   - Added strict skill identifier validation (`isValidSkillName`) rejecting directory traversal sequences (`..`), separators (`/`, `\`), null bytes, and hidden files.
-  - Added boundary assertion (`assertSafeChildPath`) ensuring skills and registry components cannot escape their destination directories.
+  - Added boundary assertions (`assertSafeChildPath`) ensuring skills, components, and icons cannot escape their target directories.
   - Protected removal routines with guards preventing accidental or malicious deletion of filesystem root (`/`), home directory, or current project root.
 - **Telemetry Credential Scrubbing:**
   - Automated redaction (`sanitizeArgs`) of embedded URL credentials (`https://[REDACTED]@...`), GitHub/GitLab/NPM tokens, and `--token`/`--secret` CLI flags before recording or transmitting telemetry.
@@ -126,6 +126,9 @@ pphat list skills
   - Release workflow gated with mandatory `npm test` before `npm publish`.
   - Replaced `npm install` with `npm ci` in registry build pipeline for deterministic lockfile resolution.
   - Added Dependabot configuration (`.github/dependabot.yml`) for automated weekly dependency vulnerability monitoring across root npm, `/server` npm, and GitHub Actions.
+- **Dependency & Toolchain Upgrades:**
+  - Upgraded dependencies: `@inquirer/prompts` to `^8.7.5`, `ora` to `9.4.1`, `@types/node` to `^20.19.43`, `tsup` to `^9.0.0`, and TypeScript to `^5.9.3`.
+  - Modernized `tsconfig.json` module resolution to `bundler` / `ESNext`.
 
 ---
 
@@ -151,7 +154,7 @@ pphat list skills
 
 ## 🧪 Verification & Quality Assurance
 
-- **Unit & Integration Tests:** All 20 skill management tests passed (`tests/skills.test.ts`), including 3 automated supply chain security test cases.
+- **Unit & Integration Tests:** All 35 tests passed across 4 test suites (`tests/skills.test.ts`, `tests/help.test.ts`, `tests/config*.test.ts`, `tests/init.test.ts`), including 3 automated supply chain security test cases.
 - **Regression Tests:** All help, configuration, and command tests passed.
 - **Type Safety:** `npx tsc --noEmit` verified with 0 errors.
 - **Package Build:** `npm run build` compiled clean CommonJS bundles and DTS declarations.
