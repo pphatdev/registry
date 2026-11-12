@@ -54,7 +54,7 @@
         "@typescript/typescript6": "^6.0.2",
         "chalk": "^6.0.1",
         "commander": "^15.0.0",
-        "ora": "^9.4.1"
+        "ora": "^10.0.0"
     },
     "devDependencies": {
         "@types/node": "^26.6.5",
